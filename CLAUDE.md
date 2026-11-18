@@ -63,6 +63,15 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · digitação no card real e FIPE "igual ao card" (extensão 0.13.0)
+
+- Testado no PowerCRM real (Playwright, só leitura): o CRM usa jQuery 1.12.4 + Bootstrap 3.3.7, cujo enforceFocus é um
+  listener de `focus` em captura no document; barrar no host não bastava (só entravam letras acentuadas). Agora o
+  painel barra `focus`/`focusin` do próprio host já na captura da window. Depois: texto inteiro, foco na caixa, envio ok.
+- "conferir" tem cor própria (laranja) e seção "Para conferir", separada de "Divergências" (vermelho). Antes as duas eram
+  vermelhas na mesma seção e a FIPE com dúvida só de versão parecia divergente.
+- Código FIPE igual ao do card: fonte "· igual ao card" e a nota explica que a dúvida é só a versão.
+
 ### 2026-11-18 · caixa "o que está errado" fixa no painel (extensão 0.12.0)
 
 - O card do PowerCRM é modal Bootstrap com enforceFocus: o foco na observação era puxado de volta para o modal e não

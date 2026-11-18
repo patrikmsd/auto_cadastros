@@ -451,11 +451,16 @@ def montar(pasta_card, r, codigo, segundos=None, custo=None):
     if fp and "vhclFipeCode" not in feitos:
         cand = next((c for c in fp.get("candidatas") or [] if c.get("modelo") == escolhida), {})
         outra = escolhida and cand.get("codigo_fipe") and cand["codigo_fipe"] != atuais.get("vhclFipeCode")
+        igual = not outra and oficial.get("CodigoFipe") and oficial["CodigoFipe"] == atuais.get("vhclFipeCode")
+        # código igual ao do card e só dúvida entre versões: é "conferir" (laranja), não divergência; o texto diz isso
+        nota = ("o código e o valor do card são os mesmos que o robô achou; a dúvida é só se a versão é essa mesmo · "
+                if igual and fp.get("status") != "OK" else "") + fp.get("detalhe", "")[:400]
         novo("Cotações", "vhclFipeCode", "Código FIPE",
              f"{cand['codigo_fipe']} · {escolhida} · {cand.get('valor', '')}" if outra else oficial.get("CodigoFipe", ""),
-             f"FIPE oficial {fp.get('mes', '')} + IA ({(fp.get('ia') or {}).get('certeza', '?')} certeza)",
+             f"FIPE oficial {fp.get('mes', '')} + IA ({(fp.get('ia') or {}).get('certeza', '?')} certeza)"
+             + (" · igual ao card" if igual else ""),
              "ok" if fp.get("status") == "OK" else "diverge" if fp.get("status") == "DIVERGENTE" else "conferir",
-             fp.get("detalhe", "")[:400] + (" · o robô não troca o código FIPE: só sugere" if outra else ""), pode=False)
+             nota + (" · o robô não troca o código FIPE: só sugere" if outra else ""), pode=False)
         feitos.add("vhclFipeCode")
 
     # 5) o resto da conferência que tem campo na tela

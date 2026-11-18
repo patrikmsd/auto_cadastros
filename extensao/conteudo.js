@@ -275,6 +275,11 @@
     raiz.addEventListener("input", ev => { if (ev.target.id === "obs") rascunho = ev.target.value; });
     // O card do CRM é um modal Bootstrap que "puxa o foco" de volta quando algo fora dele é focado (enforceFocus):
     // sem isto não dá para digitar na observação. As teclas digitadas aqui também não vão para os atalhos do CRM.
+    // O CRM usa jQuery 1.12 + Bootstrap 3.3.7: o "focusin" do jQuery é um listener de "focus" em CAPTURA no document,
+    // que roda antes de qualquer coisa no painel. Por isso a captura é barrada já na window (que vem antes do document).
+    for (const tipo of ["focus", "focusin"]) window.addEventListener(tipo, ev => {
+      if (ev.target === host) ev.stopImmediatePropagation();
+    }, true);
     for (const tipo of ["focusin", "focusout", "keydown", "keyup", "keypress"]) host.addEventListener(tipo, ev => {
       if (tipo.startsWith("key") && ev.key === "Escape" && !ev.composedPath().some(e => e.tagName === "TEXTAREA")) return;
       ev.stopPropagation();
@@ -383,7 +388,8 @@
         ${pre.length ? `<div class="salvar">${pre.length} campo(s) preenchido(s) pela IA na tela. <b>Confira e clique em Salvar.</b> O robô não salva.</div>` : ""}
         ${sug.length ? `<h3>Para preencher</h3>${sug.map(itemCampo).join("")}` : ""}
         ${pre.length ? `<h3>Preenchidos pela IA (falta salvar)</h3>${pre.map(itemCampo).join("")}` : ""}
-        ${div.length + conf.length ? `<h3>Divergências e pontos para conferir</h3>${[...div, ...conf].map(itemCampo).join("")}` : ""}
+        ${div.length ? `<h3>Divergências</h3>${div.map(itemCampo).join("")}` : ""}
+        ${conf.length ? `<h3>Para conferir</h3>${conf.map(itemCampo).join("")}` : ""}
         ${gerais.length ? `<h3>Conferência geral</h3>${gerais.map(i => `<div class="item ${STATUS_ITEM[i.status]}"><div class="rot"><i></i>${esc(i.nome)}</div>
             <details><summary>${esc(i.detalhe.slice(0, 110))}${i.detalhe.length > 110 ? "…" : ""}</summary>${esc(i.detalhe)}</details></div>`).join("")}` : ""}
         ${f && f.valor ? `<h3>FIPE oficial · ${esc(f.mes)}</h3><div class="item ${STATUS_ITEM[f.status] || "conferir"}"><div class="rot"><i></i>${esc(f.modelo)}</div>
@@ -812,7 +818,7 @@
     .marca{font-weight:600}.item.errado .marca{color:#c0262d}
     .sub,small{color:var(--sub);font-size:12px}.mono{font-family:ui-monospace,Consolas,monospace}
     h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);margin:16px 0 6px}
-    .ok{--c:#14804a;--f:#e5f6ec}.sugerido{--c:#8a4f00;--f:#fff3dc}.conferir{--c:#c0262d;--f:#fde8e8}.diverge{--c:#c0262d;--f:#fde8e8}.preenchido{--c:#7c3aed;--f:#f1eafe}
+    .ok{--c:#14804a;--f:#e5f6ec}.sugerido{--c:#8a4f00;--f:#fff3dc}.conferir{--c:#c2410c;--f:#fff1e6}.diverge{--c:#c0262d;--f:#fde8e8}.preenchido{--c:#7c3aed;--f:#f1eafe}
     .pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--f,#eef0f4);color:var(--c,var(--sub))}
     i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c,var(--borda));flex-shrink:0}
     .rot i{margin-right:6px;vertical-align:1px}

@@ -5,7 +5,7 @@
 .asx-selo::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
 .asx-selo.asx-ok{background:#e5f6ec !important;color:#14804a !important}
 .asx-selo.asx-sugerido{background:#fff3dc !important;color:#8a4f00 !important;border-color:#f0c36d !important}
-.asx-selo.asx-conferir{background:#fde8e8 !important;color:#c0262d !important;border-color:#f5b5b8 !important}
+.asx-selo.asx-conferir{background:#fff1e6 !important;color:#c2410c !important;border-color:#fdba8c !important}
 .asx-selo.asx-diverge{background:#fde8e8 !important;color:#c0262d !important}
 .asx-selo.asx-preenchido{background:#f1eafe !important;color:#7c3aed !important}
 
@@ -26,7 +26,7 @@
 .asx-moldura.asx-certo{background:#22a35a;padding:2px}
 
 .asx-campo-diverge{outline:2px solid #e5484d !important;outline-offset:1px}
-.asx-campo-conferir{outline:2px dashed #e5484d !important;outline-offset:1px}
+.asx-campo-conferir{outline:2px dashed #f97316 !important;outline-offset:1px}
 .asx-destaque{animation:asx-pisca 1s ease-in-out 2 !important}
 @keyframes asx-gira{to{--asx-ang:360deg}}
 @keyframes asx-respira{50%{color:#d97706}}
