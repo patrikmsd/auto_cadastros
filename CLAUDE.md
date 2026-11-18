@@ -29,7 +29,10 @@ Requisitos: Ubuntu 24.04 (Python 3.12+; no 22.04 o instalador explica como pôr 
 2. Da raiz, com o usuário do serviço: `bash servidor/instalar.sh`. Ele instala as bibliotecas do sistema, o `.venv`, o
    Chromium do Playwright, cria e liga o serviço `assistente-powercrm` (religa sozinho 10 s depois de cair e liga junto com
    o servidor) e, se o `ufw` estiver ativo, libera a porta 8780 só para redes internas. Para atualizar o código, rode de novo.
-3. Chave de cada analista: `.venv/bin/python -m robo.assistente --nova-chave "Nome"` (lista: `--chaves`). Fica em `robo/saida/assistente/analistas.json`.
+3. Administração: `http://IP_DO_SERVIDOR:8780/admin`, com a senha `admin_senha=` do `.env` (sem ela a página fica
+   desligada). Lá se cria e revoga a chave de cada analista, se vê a fila, a sessão do CRM, o custo de IA do dia, os erros,
+   o log e as **observações dos analistas**. Reserva pela linha de comando: `--nova-chave "Nome"` / `--chaves`.
+   As chaves ficam em `robo/saida/assistente/analistas.json`.
 4. Extensão em cada PC: `chrome://extensions` → Modo do desenvolvedor → Carregar sem compactação → pasta `extensao/`.
    O ícone da extensão abre a janelinha de conexão: endereço do servidor (ex.: `http://192.168.0.50:8780`) e a chave.
 
@@ -37,7 +40,8 @@ Comandos: `sudo systemctl status|restart|stop assistente-powercrm` · `journalct
 No PC de desenvolvimento (Windows) o mesmo código roda com tela; `ROBO_SEM_TELA=1` força o modo do servidor.
 
 Logs: `robo/saida/logs/assistente-AAAAMMDD.log` (tudo o que sai no terminal, com hora). Custos de IA: `robo/saida/custos_ia.csv`.
-Incertezas: `robo/saida/incertezas.csv`. A porta 8780 é HTTP sem criptografia: **nunca abrir para a internet**.
+Incertezas: `robo/saida/incertezas.csv`. Observações dos analistas: banco SQLite `robo/saida/assistente/assistente.db`
+(tabela `observacoes`; o `observacoes.csv` continua como cópia). A porta 8780 é HTTP sem criptografia: **nunca abrir para a internet**.
 
 ## Regras que não podem quebrar
 
@@ -51,13 +55,24 @@ Incertezas: `robo/saida/incertezas.csv`. A porta 8780 é HTTP sem criptografia: 
 ## Configuração (`.env` na raiz, fora do Git)
 
 `powercrm`, `login`, `password` (login automático do robô), `api_gpt`, `api_mistral`, `apigoogle`, `anthropic_api_key`,
-opcionais `gpt_modelo`, `fipe_modelo`, `dolar`, `robo_modo`.
+`admin_senha` (página /admin), opcionais `empresa`, `gpt_modelo`, `fipe_modelo`, `dolar`, `robo_modo`.
 
 Dados que mudam e precisam ser atualizados à mão: `robo/regras/tabela_aceitacao_22-05-2026.txt`, `NOMES_ANALISTAS` em
 `robo/config.py` (analista nova sem nome ali → o robô abre os cards dela), as planilhas da raiz e o preço do `gpt-6-luna`
 em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
+
+### 2026-11-18 · página de administração e banco das observações
+
+- `robo/admin.html` + rotas `/admin` e `/api/admin/*` em `robo/assistente.py`: senha no cabeçalho `X-Admin` (comparação em
+  tempo constante; senha errada espera 1 s). Analistas (criar/mostrar/copiar/revogar chave), situação (rodando, fila,
+  prontos hoje, custo de IA do dia, sessão do CRM, fotos de falha de login), observações (com filtro), erros e log.
+- Observações dos analistas agora vão para o SQLite `robo/saida/assistente/assistente.db`; na primeira vez o que estava
+  no `observacoes.csv` é trazido para o banco. O CSV continua sendo gravado.
+- Rede virou o padrão (`--local` para atender só o próprio PC); `--rede` ainda é aceito.
+- Testado com servidor de teste: senha errada/ausente → 403, sem `admin_senha` → 503, criar e revogar chave, observação
+  gravada e lida do banco, caminho de foto inválido → 404. Página ainda não aberta num navegador do servidor real.
 
 ### 2026-11-18 · servidor Ubuntu sem tela
 

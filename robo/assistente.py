@@ -777,11 +777,12 @@ def analistas():
 def nova_chave(nome):
     import secrets
 
-    todas = analistas()
     chave = secrets.token_urlsafe(12)
-    todas[chave] = nome.strip()[:60]
-    ANALISTAS.parent.mkdir(parents=True, exist_ok=True)
-    ANALISTAS.write_text(json.dumps(todas, ensure_ascii=False, indent=1), encoding="utf-8")
+    with _trava:
+        todas = analistas()
+        todas[chave] = nome.strip()[:60]
+        ANALISTAS.parent.mkdir(parents=True, exist_ok=True)
+        ANALISTAS.write_text(json.dumps(todas, ensure_ascii=False, indent=1), encoding="utf-8")
     return chave
 
 
@@ -803,6 +804,50 @@ def posicao(pedido):
     return {"posicao": fila.index(pedido) + 1 if pedido in fila else None, "na_fila": len(fila), "rodando_agora": rodando}
 
 
+BANCO = PASTA / "assistente.db"  # SQLite: as observações dos analistas (a tela /admin lê daqui)
+
+
+def _banco():
+    """Conexão nova a cada uso (o servidor atende em várias threads). Cria a tabela e, na primeira vez,
+    traz o que já estava no observacoes.csv."""
+    import sqlite3
+    from contextlib import closing, contextmanager
+
+    @contextmanager
+    def abrir():
+        BANCO.parent.mkdir(parents=True, exist_ok=True)
+        with closing(sqlite3.connect(BANCO, timeout=10)) as db:
+            with db:  # commit no fim (rollback se der erro)
+                yield db
+
+    return abrir()
+
+
+def preparar_banco():
+    with _banco() as db:
+        db.execute("""CREATE TABLE IF NOT EXISTS observacoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, data_hora TEXT, codigo TEXT, placa TEXT, analista TEXT, texto TEXT,
+            campos_errados TEXT, preenchidos TEXT, pasta TEXT)""")
+        if db.execute("SELECT COUNT(*) FROM observacoes").fetchone()[0] or not OBSERVACOES.exists():
+            return
+        with OBSERVACOES.open(encoding="utf-8-sig", newline="") as f:
+            linhas = list(csv.DictReader(f, delimiter=";"))
+        db.executemany("INSERT INTO observacoes (data_hora, codigo, placa, analista, texto, campos_errados, preenchidos, pasta) "
+                       "VALUES (?,?,?,?,?,?,?,?)",
+                       [(l.get("data_hora"), l.get("codigo"), l.get("placa"), l.get("analista"), l.get("observacao"),
+                         json.dumps(l.get("campos_errados") or "", ensure_ascii=False),
+                         json.dumps(l.get("preenchidos_pela_ia") or "", ensure_ascii=False), l.get("pasta")) for l in linhas])
+        print(f"   banco: {len(linhas)} observação(ões) antigas trazidas do observacoes.csv")
+
+
+def _gravar_no_banco(obs, pasta):
+    with _banco() as db:
+        db.execute("INSERT INTO observacoes (data_hora, codigo, placa, analista, texto, campos_errados, preenchidos, pasta) "
+                   "VALUES (?,?,?,?,?,?,?,?)",
+                   (obs["data_hora"], obs["codigo"], obs["placa"], obs["analista"], obs["texto"],
+                    json.dumps(obs["campos_errados"], ensure_ascii=False), json.dumps(obs["preenchidos"], ensure_ascii=False), str(pasta)))
+
+
 def observar(dados, quem=""):
     """Observação do analista: o que estava errado no card ou o que a IA sugeriu/preencheu errado.
     quem: nome da chave (pela rede o nome vem da chave, não do que foi digitado)."""
@@ -816,6 +861,7 @@ def observar(dados, quem=""):
                               for c in (dados.get("campos_errados") or [])[:40]],
            "preenchidos": {corta(k, 40): corta(v, 300) for k, v in list((dados.get("preenchidos") or {}).items())[:40]}}
     arquivo = Path(t["pasta"]) / "observacoes.json"
+    _gravar_no_banco(obs, t["pasta"])
     with _trava:
         todas = (json.loads(arquivo.read_text(encoding="utf-8")) if arquivo.exists() else []) + [obs]
         arquivo.write_text(json.dumps(todas, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -828,6 +874,95 @@ def observar(dados, quem=""):
                         " | ".join(f"{c['rotulo']}: sugerido {c['sugerido'] or '-'} (card {c['no_card'] or '-'})" for c in obs["campos_errados"]),
                         " | ".join(f"{k}={v}" for k, v in obs["preenchidos"].items()), t["pasta"]])
     return todas
+
+
+# ---------------- administração (/admin) ----------------
+# Senha em admin_senha= no .env (lida a cada pedido). Sem ela a administração fica desligada.
+
+FOTO_LOGIN = re.compile(r"^login_falhou-\d{8}-\d{6}\.png$")
+
+
+def _senha_admin():
+    return config._ler_env().get("admin_senha", "")
+
+
+def revogar_chave(chave):
+    with _trava:
+        todas = analistas()
+        nome = todas.pop(chave, None)
+        ANALISTAS.write_text(json.dumps(todas, ensure_ascii=False, indent=1), encoding="utf-8")
+    return nome
+
+
+def _custo_do_dia():
+    """R$ gastos com IA hoje (custos_ia.csv) e quantas chamadas."""
+    hoje, total, n = f"{datetime.now():%d/%m/%Y}", 0.0, 0
+    try:
+        with custo_ia.ARQUIVO.open(encoding="utf-8-sig", newline="") as f:
+            for linha in csv.DictReader(f, delimiter=";"):
+                if (linha.get("data_hora") or "").startswith(hoje):
+                    n += 1
+                    try:
+                        total += float((linha.get("custo_brl") or "0").replace(",", "."))
+                    except ValueError:
+                        pass
+    except OSError:
+        pass
+    return {"reais": round(total, 4), "chamadas": n}
+
+
+def situacao_admin():
+    with _trava:
+        trabalhos = [{"pedido": k, **{c: v.get(c) for c in ("estado", "etapa", "erro", "placa", "codigo", "por", "inicio", "fim")}}
+                     for k, v in TRABALHOS.items()]
+    from . import sessao
+
+    hoje = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    sessao_arq = sessao.arquivo_sessao()
+    fotos = sorted((f.name for f in LOGS.glob("login_falhou-*.png")), reverse=True)[:5] if LOGS.exists() else []
+    return {
+        "versao": VERSAO,
+        "analistas": [{"nome": n, "chave": c} for c, n in sorted(analistas().items(), key=lambda x: x[1].lower())],
+        "fila": sorted((t for t in trabalhos if t["estado"] == "fila"), key=lambda t: t.get("inicio") or 0),
+        "rodando": next((t for t in trabalhos if t["estado"] == "rodando"), None),
+        "prontos_hoje": sum(1 for t in trabalhos if t["estado"] == "pronto" and (t.get("fim") or 0) >= hoje),
+        "erros": sorted((t for t in trabalhos if t["estado"] == "erro"), key=lambda t: -(t.get("fim") or t.get("inicio") or 0))[:20],
+        "custo_hoje": _custo_do_dia(),
+        "sessao_crm": {"existe": sessao_arq.exists(),
+                       "salva_em": f"{datetime.fromtimestamp(sessao_arq.stat().st_mtime):%d/%m/%Y %H:%M}" if sessao_arq.exists() else None,
+                       "empresa": sessao.EMPRESA, "login_automatico": sessao.tem_credenciais(), "sem_tela": sessao.SEM_TELA},
+        "fotos_login": fotos,
+    }
+
+
+def observacoes_admin(limite=500):
+    """As observações mais recentes primeiro, do banco."""
+    with _banco() as db:
+        linhas = db.execute("SELECT data_hora, codigo, placa, analista, texto, campos_errados, preenchidos FROM observacoes "
+                            "ORDER BY id DESC LIMIT ?", (limite,)).fetchall()
+    resumo_campos = lambda cs: " | ".join(f"{c.get('rotulo')}: sugerido {c.get('sugerido') or '-'} (card {c.get('no_card') or '-'})" for c in cs)
+    saida = []
+    for data_hora, codigo, placa, analista, texto, campos, preench in linhas:
+        try:
+            campos, preench = json.loads(campos or "[]"), json.loads(preench or "{}")
+        except ValueError:
+            campos, preench = [], {}
+        saida.append({"data_hora": data_hora, "codigo": codigo, "placa": placa, "analista": analista, "observacao": texto,
+                      "campos_errados": resumo_campos(campos) if isinstance(campos, list) else str(campos),
+                      "preenchidos_pela_ia": " | ".join(f"{k}={v}" for k, v in preench.items()) if isinstance(preench, dict) else str(preench)})
+    return saida
+
+
+def log_admin(linhas=300):
+    arquivo = LOGS / f"assistente-{datetime.now():%Y%m%d}.log"
+    try:
+        with arquivo.open("rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 200_000))
+            texto = f.read().decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+    return "\n".join(texto.splitlines()[-linhas:])
 
 
 # ---------------- servidor ----------------
@@ -863,9 +998,65 @@ class Pedido(BaseHTTPRequestHandler):
                   if self.headers.get(CABECALHO) == "1" else "proibido")
         return self._enviar({"erro": motivo, "proibido": True}, status=403)
 
+    def _admin_ok(self):
+        """A senha vem no cabeçalho X-Admin (cabeçalho próprio: outro site não consegue mandar sem CORS).
+        Senha errada espera 1 s, para não dar para chutar rápido."""
+        import hmac
+
+        senha = _senha_admin()
+        if not senha:
+            self._enviar({"erro": "administração desligada: coloque admin_senha= no .env do servidor", "desligada": True}, status=503)
+            return False
+        if not hmac.compare_digest((self.headers.get("X-Admin") or "").encode(), senha.encode()):
+            time.sleep(1)
+            self._enviar({"erro": "senha errada", "proibido": True}, status=403)
+            return False
+        return True
+
+    def _admin_get(self, caminho, q):
+        if not self._admin_ok():
+            return
+        if caminho == "/api/admin/situacao":
+            return self._enviar(situacao_admin())
+        if caminho == "/api/admin/observacoes":
+            return self._enviar(observacoes_admin())
+        if caminho == "/api/admin/log":
+            return self._enviar({"texto": log_admin()})
+        m = re.match(r"^/api/admin/foto/(.+)$", caminho)
+        if m and FOTO_LOGIN.match(m.group(1)) and (LOGS / m.group(1)).exists():
+            return self._enviar((LOGS / m.group(1)).read_bytes(), "image/png")
+        return self._enviar({"erro": "não encontrado"}, status=404)
+
+    def _admin_post(self, caminho, corpo):
+        if not self._admin_ok():
+            return
+        try:
+            dados = json.loads(corpo or b"{}")
+        except ValueError:
+            return self._enviar({"erro": "JSON inválido"}, status=400)
+        if caminho == "/api/admin/chave":
+            nome = str(dados.get("nome") or "").strip()
+            if not nome:
+                return self._enviar({"erro": "escreva o nome do analista"}, status=400)
+            chave = nova_chave(nome)
+            print(f"{datetime.now():%H:%M:%S} · admin criou a chave de {nome}")
+            return self._enviar({"ok": True, "nome": nome[:60], "chave": chave})
+        if caminho == "/api/admin/revogar":
+            nome = revogar_chave(str(dados.get("chave") or ""))
+            if nome is None:
+                return self._enviar({"erro": "chave não existe"}, status=404)
+            print(f"{datetime.now():%H:%M:%S} · admin revogou a chave de {nome}")
+            return self._enviar({"ok": True, "nome": nome})
+        return self._enviar({"erro": "não encontrado"}, status=404)
+
     def do_GET(self):
         if self.path in ("/", "/index.html"):
             return self._enviar((Path(__file__).parent / "assistente.html").read_bytes(), "text/html")
+        if self.path in ("/admin", "/admin/"):
+            return self._enviar((Path(__file__).parent / "admin.html").read_bytes(), "text/html")
+        if self.path.startswith("/api/admin/"):
+            caminho, _, q = self.path.partition("?")
+            return self._admin_get(caminho, q)
         quem = self._quem()
         if not quem:
             return self._proibido()
@@ -921,6 +1112,11 @@ class Pedido(BaseHTTPRequestHandler):
         return self._enviar({"erro": "não encontrado"}, status=404)
 
     def do_POST(self):
+        if self.path.startswith("/api/admin/"):
+            tamanho = int(self.headers.get("Content-Length", 0))
+            if tamanho < 0 or tamanho > 10_000:
+                return self._enviar({"erro": "grande demais"}, status=413)
+            return self._admin_post(self.path, self.rfile.read(tamanho))
         quem = self._quem()
         if not quem:
             return self._proibido()
@@ -1004,7 +1200,8 @@ def main():
     ap.add_argument("--importar", nargs="+", help="pasta(s) de demo já rodada: vira resultado sem abrir o CRM")
     ap.add_argument("--sem-navegador", action="store_true", help="não abre a página do assistente")
     ap.add_argument("--porta", type=int, default=PORTA, help=f"porta do servidor (padrão {PORTA}; a extensão usa {PORTA})")
-    ap.add_argument("--rede", action="store_true", help="atende as outras máquinas da rede (cada analista com a sua chave)")
+    ap.add_argument("--rede", action="store_true", help="(padrão; mantido por compatibilidade) atende as outras máquinas da rede")
+    ap.add_argument("--local", action="store_true", help="atende só este PC (127.0.0.1), sem a rede")
     ap.add_argument("--nova-chave", metavar="NOME", help="cria a chave de um analista, mostra e sai")
     ap.add_argument("--chaves", action="store_true", help="lista os analistas com chave e sai")
     args = ap.parse_args()
@@ -1017,6 +1214,7 @@ def main():
             print(f"{nome}: {chave}")
         return
     carregar_indice()
+    preparar_banco()
     if TRABALHOS:
         for t in TRABALHOS.values():  # o que estava rodando quando o servidor caiu
             if t.get("estado") in ("fila", "rodando"):
@@ -1024,13 +1222,16 @@ def main():
     for pasta in args.importar or []:
         importar(pasta)
     ThreadingHTTPServer.allow_reuse_address = False  # no Windows duas instâncias na mesma porta não dão erro sem isto
-    servidor = ThreadingHTTPServer(("0.0.0.0" if args.rede else "127.0.0.1", args.porta), Pedido)
+    rede = not args.local
+    servidor = ThreadingHTTPServer(("0.0.0.0" if rede else "127.0.0.1", args.porta), Pedido)
     threading.Thread(target=_trabalhador, daemon=True).start()
     print(f"Assistente em http://127.0.0.1:{args.porta} · SÓ LEITURA no CRM · Ctrl+C para encerrar")
-    if args.rede:
+    if rede:
         print("Na rede: " + (" · ".join(f"http://{ip}:{args.porta}" for ip in ips_da_rede()) or "(IP não encontrado)"))
-        print(f"   {len(analistas())} analista(s) com chave · crie com: python -m robo.assistente --nova-chave \"Nome\"")
-        print(f"   se as outras máquinas não conectarem: libere a porta {args.porta} no Firewall do Windows desta máquina")
+        print(f"   {len(analistas())} analista(s) com chave · crie na administração ou com --nova-chave \"Nome\"")
+        print(f"   se as outras máquinas não conectarem: libere a porta {args.porta} no firewall desta máquina")
+    print(f"Administração: http://{(ips_da_rede() or ['127.0.0.1'])[0] if rede else '127.0.0.1'}:{args.porta}/admin"
+          + ("" if _senha_admin() else "  (DESLIGADA: coloque admin_senha= no .env)"))
     print("Extensão: chrome://extensions → Modo do desenvolvedor → Carregar sem compactação → pasta extensao/")
     if not args.sem_navegador:
         webbrowser.open(f"http://127.0.0.1:{args.porta}")

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente · administração</title>
+<style>
+:root{--fundo:#f4f6fa;--card:#fff;--txt:#1b2333;--sub:#667085;--borda:#e3e7ef;--acento:#3157d5;--acentof:#e8eefc;
+  --ok:#14804a;--okf:#e5f6ec;--alerta:#a15c00;--alertaf:#fff3dc;--erro:#c0262d;--errof:#fde8e8;--neutrof:#eef0f4;--log:#0f141b;--logtxt:#d6dde8}
+@media (prefers-color-scheme:dark){:root{--fundo:#11151c;--card:#1a2029;--txt:#e6e9ef;--sub:#98a2b3;--borda:#2a3240;--acento:#7d9bff;
+  --acentof:#1f2a44;--ok:#4cc38a;--okf:#15301f;--alerta:#f0b44c;--alertaf:#33280f;--erro:#f27a7f;--errof:#3a1a1c;--neutrof:#232a35;--log:#0b0f14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--txt);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:21px;margin:0}.sub{color:var(--sub)}
+h2{font-size:15px;margin:0 0 12px;display:flex;gap:8px;align-items:center}
+.topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topo .sub{flex:1}
+.caixa{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:18px;margin-top:16px}
+.linha{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1;min-width:180px;font:inherit;padding:9px 12px;border:1px solid var(--borda);border-radius:10px;background:var(--fundo);color:var(--txt)}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 16px;background:var(--acento);color:#fff;cursor:pointer}
+button.leve{background:var(--neutrof);color:var(--txt);padding:5px 10px;font-size:12px}
+button.perigo{background:var(--errof);color:var(--erro);padding:5px 10px;font-size:12px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--borda);vertical-align:top}
+th{font-size:12px;color:var(--sub);font-weight:600}
+.mono{font-family:ui-monospace,Consolas,monospace}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.ok{background:var(--okf);color:var(--ok)}.alerta{background:var(--alertaf);color:var(--alerta)}.erro{background:var(--errof);color:var(--erro)}
+.neutro{background:var(--neutrof);color:var(--sub)}
+.numeros{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.num{border:1px solid var(--borda);border-radius:12px;padding:12px}
+.num b{display:block;font-size:22px}.num span{color:var(--sub);font-size:12px}
+.vazio{color:var(--sub);text-align:center;padding:18px}
+.aviso{margin-top:10px;padding:9px 12px;border-radius:10px;display:none}
+.aviso.ok,.aviso.erro{display:block}
+.nova{margin-top:12px;padding:12px;border-radius:10px;background:var(--okf);color:var(--ok);display:none}
+.nova code{font-size:15px;user-select:all;color:var(--txt)}
+.abas{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+.abas button{background:var(--card);color:var(--sub);border:1px solid var(--borda)}
+.abas button.ativa{background:var(--acento);color:#fff;border-color:var(--acento)}
+pre{background:var(--log);color:var(--logtxt);border-radius:10px;padding:12px;max-height:60vh;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;margin:0}
+.campos{font-size:12px;color:var(--sub);margin-top:4px}
+.fotos{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.fotos a{font-size:12px}
+.tabela{overflow-x:auto}
+#entrar{max-width:420px;margin:12vh auto 0}
+.escondido{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <section id="entrar" class="caixa">
+    <h2>Administração do assistente</h2>
+    <p class="sub">Digite a senha de administrador (a linha <span class="mono">admin_senha=</span> do .env do servidor).</p>
+    <div class="linha"><input id="senha" type="password" placeholder="senha" autofocus><button id="btEntrar">Entrar</button></div>
+    <div id="avisoEntrar" class="aviso"></div>
+  </section>
+
+  <div id="painel" class="escondido">
+    <div class="topo">
+      <h1>Administração</h1>
+      <span class="sub" id="atualizado"></span>
+      <button class="leve" id="sair">Sair</button>
+    </div>
+
+    <section class="caixa">
+      <h2>Situação</h2>
+      <div class="numeros" id="numeros"></div>
+      <div id="crm" style="margin-top:12px"></div>
+    </section>
+
+    <div class="abas" id="abas">
+      <button data-aba="analistas" class="ativa">Analistas</button>
+      <button data-aba="observacoes">Observações dos analistas</button>
+      <button data-aba="erros">Erros recentes</button>
+      <button data-aba="log">Log</button>
+    </div>
+
+    <section class="caixa" data-pagina="analistas">
+      <h2>Analistas com chave</h2>
+      <div class="linha"><input id="nome" placeholder="nome do analista"><button id="criar">Criar chave</button></div>
+      <div class="nova" id="nova"></div>
+      <div id="avisoAnalistas" class="aviso"></div>
+      <div class="tabela" style="margin-top:12px"><table><thead><tr><th>Nome</th><th>Chave</th><th></th></tr></thead><tbody id="listaAnalistas"></tbody></table></div>
+    </section>
+
+    <section class="caixa escondido" data-pagina="observacoes">
+      <h2>Observações dos analistas <span class="sub" id="qtObs"></span></h2>
+      <p class="sub" style="margin-top:-6px">O que os analistas marcaram como errado no painel da extensão. As mais novas primeiro.</p>
+      <input id="filtroObs" placeholder="filtrar por placa, card, analista ou texto" style="width:100%;margin-bottom:8px">
+      <div class="tabela"><table><thead><tr><th>Quando</th><th>Card</th><th>Analista</th><th>O que disse</th></tr></thead><tbody id="listaObs"></tbody></table></div>
+    </section>
+
+    <section class="caixa escondido" data-pagina="erros">
+      <h2>Cards que deram erro</h2>
+      <div class="tabela"><table><thead><tr><th>Card</th><th>Quem pediu</th><th>Motivo</th></tr></thead><tbody id="listaErros"></tbody></table></div>
+    </section>
+
+    <section class="caixa escondido" data-pagina="log">
+      <h2>Log de hoje <span class="sub">(atualiza sozinho)</span></h2>
+      <pre id="log"></pre>
+    </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let senha = "", aba = "analistas", obs = [], timer = null;
+try { senha = sessionStorage.getItem("asx-admin") || ""; } catch {}
+
+async function api(caminho, corpo) {
+  const r = await fetch(caminho, {method: corpo ? "POST" : "GET", cache: "no-store",
+    headers: {"X-Admin": senha, ...(corpo ? {"Content-Type": "application/json"} : {})}, body: corpo ? JSON.stringify(corpo) : undefined});
+  const tipo = r.headers.get("Content-Type") || "";
+  const dados = tipo.includes("json") ? await r.json() : null;
+  if (r.status === 403 || r.status === 503) { sair(dados?.erro || "senha errada"); throw new Error("proibido"); }
+  return {status: r.status, dados};
+}
+
+function aviso(id, texto, ok) { const a = $(id); a.textContent = texto; a.className = "aviso " + (ok ? "ok" : "erro"); }
+
+async function entrar() {
+  senha = $("senha").value || senha;
+  try {
+    await atualizar();
+  } catch { return; }
+  try { sessionStorage.setItem("asx-admin", senha); } catch {}
+  $("entrar").classList.add("escondido");
+  $("painel").classList.remove("escondido");
+  clearInterval(timer);
+  timer = setInterval(() => atualizar().catch(() => {}), 5000);
+}
+
+function sair(motivo) {
+  clearInterval(timer);
+  senha = "";
+  try { sessionStorage.removeItem("asx-admin"); } catch {}
+  $("painel").classList.add("escondido");
+  $("entrar").classList.remove("escondido");
+  if (motivo) aviso("avisoEntrar", motivo, false);
+}
+
+const hora = t => t ? new Date(t * 1000).toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) : "";
+const card = t => `<b class="mono">${esc(t.placa || t.codigo || t.pedido)}</b>${t.placa && t.codigo ? ` <span class="sub mono">${esc(t.codigo)}</span>` : ""}`;
+
+async function atualizar() {
+  const {dados: s} = await api("/api/admin/situacao");
+  const rod = s.rodando;
+  $("numeros").innerHTML = [
+    [rod ? esc(rod.placa || rod.pedido) : "nada", rod ? `analisando agora · ${esc(rod.etapa || "")}` : "analisando agora"],
+    [s.fila.length, "esperando na fila"],
+    [s.prontos_hoje, "cards analisados hoje"],
+    ["R$ " + s.custo_hoje.reais.toFixed(2).replace(".", ","), `custo de IA hoje · ${s.custo_hoje.chamadas} chamadas`],
+    [s.analistas.length, "analistas com chave"],
+  ].map(([n, t]) => `<div class="num"><b>${n}</b><span>${t}</span></div>`).join("");
+  const c = s.sessao_crm;
+  $("crm").innerHTML = `<div class="linha" style="align-items:center">
+      <span class="pill ${c.existe ? "ok" : "alerta"}">${c.existe ? "sessão do CRM salva" : "sem sessão do CRM ainda"}</span>
+      ${c.salva_em ? `<span class="sub">renovada em ${esc(c.salva_em)}</span>` : ""}
+      <span class="pill ${c.login_automatico ? "ok" : "erro"}">${c.login_automatico ? "login automático ligado" : "sem login/senha no .env"}</span>
+      <span class="sub">empresa: <b>${esc(c.empresa)}</b>${c.sem_tela ? " · sem tela" : ""}</span></div>
+    ${s.fotos_login.length ? `<div class="fotos"><span class="pill erro">últimas falhas de login</span>${s.fotos_login.map(f =>
+      `<a href="#" data-foto="${esc(f)}">${esc(f.replace(/^login_falhou-(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d).*/, "$3/$2 $4:$5"))}</a>`).join("")}</div>` : ""}`;
+  $("listaAnalistas").innerHTML = s.analistas.length ? s.analistas.map(a => `<tr><td><b>${esc(a.nome)}</b></td>
+      <td class="mono"><span data-chave="${esc(a.chave)}">••••••••${esc(a.chave.slice(-4))}</span>
+        <button class="leve" data-mostrar="${esc(a.chave)}">mostrar</button> <button class="leve" data-copiar="${esc(a.chave)}">copiar</button></td>
+      <td style="text-align:right"><button class="perigo" data-revogar="${esc(a.chave)}" data-nome="${esc(a.nome)}">revogar</button></td></tr>`).join("")
+    : `<tr><td colspan="3" class="vazio">Nenhum analista ainda. Crie a primeira chave acima.</td></tr>`;
+  $("listaErros").innerHTML = s.erros.length ? s.erros.map(t => `<tr><td>${card(t)}<div class="sub">${hora(t.fim || t.inicio)}</div></td>
+      <td>${esc((t.por || []).join(", "))}</td><td>${esc(t.erro)}</td></tr>`).join("")
+    : `<tr><td colspan="3" class="vazio">Nenhum erro desde que o servidor ligou.</td></tr>`;
+  $("atualizado").textContent = "atualizado às " + new Date().toLocaleTimeString("pt-BR");
+  if (aba === "observacoes") await carregarObs();
+  if (aba === "log") await carregarLog();
+}
+
+async function carregarObs() {
+  obs = (await api("/api/admin/observacoes")).dados || [];
+  desenharObs();
+}
+
+function desenharObs() {
+  const f = $("filtroObs").value.trim().toLowerCase();
+  const lista = f ? obs.filter(o => Object.values(o).join(" ").toLowerCase().includes(f)) : obs;
+  $("qtObs").textContent = `(${lista.length}${f ? ` de ${obs.length}` : ""})`;
+  $("listaObs").innerHTML = lista.length ? lista.map(o => `<tr><td class="sub" style="white-space:nowrap">${esc(o.data_hora)}</td>
+      <td><b class="mono">${esc(o.placa)}</b><div class="sub mono">${esc(o.codigo)}</div></td><td>${esc(o.analista)}</td>
+      <td>${esc(o.observacao) || '<span class="sub">(sem texto)</span>'}
+        ${o.campos_errados ? `<div class="campos">Marcou errado: ${esc(o.campos_errados)}</div>` : ""}
+        ${o.preenchidos_pela_ia ? `<div class="campos">A IA preencheu: ${esc(o.preenchidos_pela_ia)}</div>` : ""}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="vazio">${obs.length ? "Nada com esse filtro." : "Nenhuma observação ainda."}</td></tr>`;
+}
+
+async function carregarLog() {
+  const pre = $("log"), noFim = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
+  pre.textContent = (await api("/api/admin/log")).dados.texto || "(log de hoje vazio)";
+  if (noFim) pre.scrollTop = pre.scrollHeight;
+}
+
+async function copiar(texto) {
+  try { await navigator.clipboard.writeText(texto); return true; } catch {}
+  const t = Object.assign(document.createElement("textarea"), {value: texto}); // http sem https: clipboard pode não existir
+  document.body.append(t); t.select();
+  const ok = document.execCommand("copy"); t.remove(); return ok;
+}
+
+$("btEntrar").onclick = entrar;
+$("senha").onkeydown = e => e.key === "Enter" && entrar();
+$("sair").onclick = () => sair();
+$("filtroObs").oninput = desenharObs;
+$("nome").onkeydown = e => e.key === "Enter" && $("criar").click();
+
+$("criar").onclick = async () => {
+  const nome = $("nome").value.trim();
+  if (!nome) return aviso("avisoAnalistas", "Escreva o nome do analista.", false);
+  const r = await api("/api/admin/chave", {nome});
+  if (r.status !== 200) return aviso("avisoAnalistas", r.dados?.erro || "não deu para criar", false);
+  $("avisoAnalistas").className = "aviso";
+  $("nome").value = "";
+  $("nova").style.display = "block";
+  $("nova").innerHTML = `Chave de <b>${esc(r.dados.nome)}</b>: <code class="mono">${esc(r.dados.chave)}</code>
+    <button class="leve" data-copiar="${esc(r.dados.chave)}">copiar</button>
+    <div class="campos">Mande para o analista colar na janelinha da extensão (ícone do assistente no Chrome).</div>`;
+  atualizar();
+};
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-copiar],[data-mostrar],[data-revogar],[data-aba],[data-foto]");
+  if (!b) return;
+  e.preventDefault();
+  if (b.dataset.copiar) { b.textContent = (await copiar(b.dataset.copiar)) ? "copiada" : "falhou"; setTimeout(() => b.textContent = "copiar", 1500); }
+  if (b.dataset.mostrar) { const s = b.parentElement.querySelector("[data-chave]"); s.textContent = s.dataset.chave; b.remove(); }
+  if (b.dataset.revogar) {
+    if (!confirm(`Revogar a chave de ${b.dataset.nome}? A extensão dele para de funcionar na hora.`)) return;
+    const r = await api("/api/admin/revogar", {chave: b.dataset.revogar});
+    aviso("avisoAnalistas", r.status === 200 ? `Chave de ${r.dados.nome} revogada.` : (r.dados?.erro || "erro"), r.status === 200);
+    atualizar();
+  }
+  if (b.dataset.aba) {
+    aba = b.dataset.aba;
+    for (const x of document.querySelectorAll("#abas button")) x.classList.toggle("ativa", x === b);
+    for (const p of document.querySelectorAll("[data-pagina]")) p.classList.toggle("escondido", p.dataset.pagina !== aba);
+    if (aba === "observacoes") carregarObs();
+    if (aba === "log") carregarLog();
+  }
+  if (b.dataset.foto) { // a foto precisa da senha no cabeçalho: busca e abre numa aba nova
+    const r = await fetch("/api/admin/foto/" + encodeURIComponent(b.dataset.foto), {headers: {"X-Admin": senha}});
+    if (r.ok) window.open(URL.createObjectURL(await r.blob()), "_blank");
+  }
+});
+
+if (senha) entrar();
+</script>
+</body>
+</html>

@@ -91,5 +91,6 @@ echo
 systemctl --no-pager --lines=5 status assistente-powercrm || true
 echo
 echo "Pronto. Endereço para a extensão: http://$(hostname -I | awk '{print $1}'):$PORTA"
-echo "Chave de analista:  .venv/bin/python -m robo.assistente --nova-chave \"Nome\""
+echo "Administração:      http://$(hostname -I | awk '{print $1}'):$PORTA/admin   (senha: admin_senha= no .env)"
+grep -qiE '^[[:space:]]*admin_senha[[:space:]]*=' .env || echo "   ATENÇÃO: falta admin_senha= no .env: a administração fica desligada até você pôr (não precisa reiniciar)"
 echo "Log:                tail -f robo/saida/logs/assistente-\$(date +%Y%m%d).log   (ou journalctl -u assistente-powercrm -f)"
