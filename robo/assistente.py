@@ -704,15 +704,14 @@ def analisar(pedido):
             _foto_tela(page, pasta_exec, "02_busca")
             if not achados:
                 return _atualizar(pedido, estado="erro", etapa="", erro="nenhum card encontrado com essa busca")
-            livres = [c for c in achados if not c["analistas"]]
-            if not livres:
-                return _atualizar(pedido, estado="pulado", etapa="", erro=f"card com analista ({', '.join(achados[0]['analistas'])}): não foi aberto")
-            alvo = livres[0]
+            # card com tag de analista também é analisado (o robô só lê; o analista usa o resultado para validar).
+            # Se a busca achar mais de um, prefere o que ainda está sem analista.
+            alvo = next((c for c in achados if not c["analistas"]), achados[0])
             pasta_card = pasta_exec / alvo["placa"]
             pasta_card.mkdir(parents=True, exist_ok=True)
             salvar(pasta_card, "cards_filtro.json", [alvo])
             _atualizar(pedido, placa=alvo["placa"], veiculo=alvo["veiculo"], etapa="lendo o card e baixando as fotos")
-            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido)
+            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido, com_analista=True)
         finally:
             browser.close()
             parar.set()
@@ -760,10 +759,11 @@ def ligar_auto(ligado):
 
 
 def _ja_resolvido(codigo):
-    """Já analisado (ou pulado, ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
+    """Já analisado (ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
     with _trava:
         for k, v in TRABALHOS.items():
-            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "pulado", "fila", "rodando"):
+            # "pulado" (card com analista, regra antiga) não conta: agora esses também são analisados
+            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "fila", "rodando"):
                 return True
     return AUTO["tentativas"].get(codigo, 0) >= TENTATIVAS_AUTO
 
@@ -808,11 +808,11 @@ def _proximo_automatico():
         return None
     finally:
         AUTO["lendo"] = False
-    livres = [c["codigo"] for c in cards if c["placa"] and not c["analistas"]]
-    novos = [c for c in livres if not _ja_resolvido(c)]
+    com_placa = [c["codigo"] for c in cards if c["placa"]]  # com ou sem tag de analista
+    novos = [c for c in com_placa if not _ja_resolvido(c)]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
                 proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
-    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista, "
+    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(com_placa)} com placa, "
           f"{len(novos)} novo(s) para analisar")
     return _proximo_automatico() if novos and FILA.empty() else None  # analista pediu enquanto lia? ele vai primeiro
 

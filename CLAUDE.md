@@ -66,10 +66,12 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 ### 2026-11-18 · análise automática dos cards do filtro
 
 - Quando a fila dos analistas está vazia, o trabalhador do `robo/assistente.py` lê a lista do filtro das analistas
-  (`lote.listar`, o mesmo filtro do lote; só lê o funil, não põe tag), analisa um card novo por vez (com placa e sem tag de
-  analista) e, ao acabar, lê a lista de novo; sem card novo, espera 2 min; sem conseguir ler a lista, 5 min.
+  (`lote.listar`, o mesmo filtro do lote; só lê o funil, não põe tag), analisa um card novo por vez (com placa, com ou sem
+  tag de analista) e, ao acabar, lê a lista de novo; sem card novo, espera 2 min; sem conseguir ler a lista, 5 min.
 - Pedido de analista passa sempre na frente (a fila dele é olhada antes de cada card automático).
-- Card que deu erro é tentado no máximo 2 vezes; já analisado/pulado não é refeito.
+- Card que deu erro é tentado no máximo 2 vezes; já analisado não é refeito.
+- **Card com tag de analista também é analisado no assistente** (automático e pedido manual): a regra antiga de pular
+  ficou só no demo e no lote (`ler_card(..., com_analista=True)` só no assistente). Os "pulados" antigos entram de novo.
 - Liga/desliga na tela /admin (guardado em `robo/saida/assistente/auto.json`; padrão ligado, `auto=0` no `.env` muda o padrão).
 - Testado: ciclo com CRM simulado (ordem, prioridade, card novo na releitura, erro com 1 nova tentativa, desligado não
   roda) e leitura real da lista no PowerCRM sem tela (7 cards em 7 s, nenhum analisado).
