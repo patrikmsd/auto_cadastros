@@ -63,6 +63,13 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · filtro do sistema desde 01/01/2020
+
+- `config.url_filtro_semana()` (usado pela análise automática, pelo lote e pela leitura do card) agora busca cards
+  **criados desde 01/01/2020** até hoje, não mais só desde a segunda-feira da semana. Muda com `filtro_desde=` no `.env`
+  (`2020-01-01` ou `01/01/2020`). Tags e vistoria continuam iguais. O lote ainda aceita `--inicio`.
+- Contagem real nesse dia: 99 cards no filtro (74 Retornada, 25 Em aprovação), 3 com placa e sem tag de analista.
+
 ### 2026-11-18 · tabela de preço relida quando o PDF muda + README
 
 - `robo/precos.py`: `tabelas_preco.json` guarda o nome, o tamanho e a data de cada PDF de preço; se algum mudar, os PDFs

@@ -53,7 +53,7 @@ def situacao(itens):
 
 def escrever_relatorio(saida, resultados):
     linhas = [f"# Conferência de cadastro – {datetime.now():%d/%m/%Y %H:%M}", "",
-              f"Filtro: semana de {config.segunda_feira():%d/%m/%Y} · cards sem nome de analista · só leitura "
+              f"Filtro: criados desde {config.FILTRO_DESDE:%d/%m/%Y} · cards sem nome de analista · só leitura "
               f"(gravações bloqueadas: {len(BLOQUEADOS)})", "",
               "| Placa | Veículo | Cidade | Situação |", "|---|---|---|---|"]
     for r in resultados:

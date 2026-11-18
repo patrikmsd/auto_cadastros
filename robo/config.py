@@ -49,9 +49,26 @@ def segunda_feira(hoje=None):
 FILTRAR_TAGS = True  # False só para testes: semana inteira, sem exigir tag ANALISAR / status da vistoria
 
 
+def _filtro_desde():
+    """Data de criação inicial do filtro: filtro_desde= no .env (2020-01-01 ou 01/01/2020); padrão 01/01/2020."""
+    from datetime import datetime
+
+    texto = ENV.get("filtro_desde", "").strip()
+    for formato in ("%Y-%m-%d", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(texto, formato).date()
+        except ValueError:
+            pass
+    return date(2020, 1, 1)
+
+
+FILTRO_DESDE = _filtro_desde()
+
+
 def url_filtro_semana(inicio=None, fim=None):
-    """Mesmo filtro das analistas: data de criação da semana, tags ANALISAR, vistoria Em aprovação + Retornadas."""
-    inicio = inicio or segunda_feira()
+    """Filtro do sistema: data de criação desde FILTRO_DESDE (01/01/2020) até hoje, tags PENDENCIAS LEVES / CADASTRO
+    COMPLETO, vistoria Em aprovação + Retornadas. (O nome ficou de quando o filtro era só a semana.)"""
+    inicio = inicio or FILTRO_DESDE
     fim = fim or date.today() + timedelta(days=1)
     url = f"{BASE_URL}/company/pipeline?dateBegin={inicio:%Y-%m-%d}&dateEnd={fim:%Y-%m-%d}&typeDate=0&tagAutomatic=0"
     if FILTRAR_TAGS:

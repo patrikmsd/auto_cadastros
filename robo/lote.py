@@ -1,6 +1,6 @@
 """Conferência em lote (SÓ LEITURA): lista os cards do funil com o filtro das analistas e confere todos, sem preencher nada.
 
-1. abre o funil com o filtro da semana (tags ANALISAR + vistoria Em aprovação/Retornada) e pega a lista pelo próprio JSON
+1. abre o funil com o filtro do sistema (criados desde config.FILTRO_DESDE, tags PENDENCIAS LEVES/CADASTRO COMPLETO + vistoria Em aprovação/Retornada) e pega a lista pelo próprio JSON
    do CRM (fetchNegotiations, blocos de 20: rola a coluna até vir o total do countNegotiations)
 2. card com tag de analista (ex.: PAMMELA) ou sem placa → não abre, fica na lista como "pulado"
 3. cada card livre: lê pelo código (como o demo), OCR local, fotos (gpt-6-luna), FIPE oficial (luna), tabela (IA),
@@ -8,7 +8,7 @@
 4. grava depois de CADA card: lote.csv, lote.md e lote.json (todos os cards, inclusive os pulados) + conferencia.json
    na pasta de cada card. Parou no meio? --retomar <pasta> continua de onde parou.
 
-Uso:  python -m robo.lote                         (semana atual, todos os cards livres)
+Uso:  python -m robo.lote                         (desde 01/01/2020, todos os cards livres)
       python -m robo.lote --so-listar             (só a lista, sem abrir card)
       python -m robo.lote --max 5                 (os 5 primeiros livres)
       python -m robo.lote --inicio 2026-10-26 --fim 2026-10-30
@@ -274,7 +274,7 @@ def gravar_lista(saida, linhas, filtro):
 
 def main():
     ap = argparse.ArgumentParser(description="Confere vários cards do funil (só leitura, sem preencher nada).")
-    ap.add_argument("--inicio", type=_data, help="data de criação inicial (padrão: segunda-feira desta semana)")
+    ap.add_argument("--inicio", type=_data, help="data de criação inicial (padrão: filtro_desde do .env, 01/01/2020)")
     ap.add_argument("--fim", type=_data, help="data de criação final (padrão: hoje)")
     ap.add_argument("--max", type=int, default=0, help="no máximo N cards conferidos (padrão: todos os livres)")
     ap.add_argument("--codigo", action="append", help="só estes códigos de card (precisam estar no filtro; pode repetir)")
@@ -283,7 +283,7 @@ def main():
     ap.add_argument("--retomar", help="pasta de um lote anterior: pula os cards já conferidos")
     ap.add_argument("--sem-painel", action="store_true", help="não abre o painel no navegador")
     args = ap.parse_args()
-    inicio = args.inicio or config.segunda_feira()
+    inicio = args.inicio or config.FILTRO_DESDE
     fim = (args.fim or date.today()) + timedelta(days=1)  # o CRM usa o fim como exclusivo
     config.FILTRAR_TAGS = True  # o lote sempre usa o filtro das analistas
 
