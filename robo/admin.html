@@ -206,10 +206,10 @@ async function copiar(texto) {
 }
 
 $("btEntrar").onclick = entrar;
-$("senha").onkeydown = e => e.key === "Enter" && entrar();
+$("senha").addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
 $("sair").onclick = () => sair();
 $("filtroObs").oninput = desenharObs;
-$("nome").onkeydown = e => e.key === "Enter" && $("criar").click();
+$("nome").addEventListener("keydown", e => { if (e.key === "Enter") $("criar").click(); });
 
 $("criar").onclick = async () => {
   const nome = $("nome").value.trim();
