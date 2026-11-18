@@ -70,6 +70,17 @@ pre{background:var(--log);color:var(--logtxt);border-radius:10px;padding:12px;ma
       <div id="crm" style="margin-top:12px"></div>
     </section>
 
+    <section class="caixa">
+      <h2>Análise automática</h2>
+      <div class="linha" style="align-items:center">
+        <span id="autoEstado"></span>
+        <span class="sub" id="autoDetalhe" style="flex:1"></span>
+        <button class="leve" id="autoBotao"></button>
+      </div>
+      <p class="sub" style="margin:8px 0 0">Quando ninguém está pedindo card, o robô lê a lista do filtro das analistas, analisa os cards
+        novos sem analista e, ao terminar, lê a lista de novo. O pedido de um analista passa sempre na frente. Só leitura no CRM.</p>
+    </section>
+
     <div class="abas" id="abas">
       <button data-aba="analistas" class="ativa">Analistas</button>
       <button data-aba="observacoes">Observações dos analistas</button>
@@ -154,6 +165,15 @@ async function atualizar() {
     ["R$ " + s.custo_hoje.reais.toFixed(2).replace(".", ","), `custo de IA hoje · ${s.custo_hoje.chamadas} chamadas`],
     [s.analistas.length, "analistas com chave"],
   ].map(([n, t]) => `<div class="num"><b>${n}</b><span>${t}</span></div>`).join("");
+  const au = s.auto, desde = t => t ? Math.max(0, Math.round((Date.now() / 1000 - t) / 60)) : null;
+  $("autoEstado").innerHTML = `<span class="pill ${au.ligado ? (au.erro ? "erro" : "ok") : "neutro"}">${au.ligado ? (au.erro ? "com erro" : "ligada") : "desligada"}</span>`;
+  $("autoDetalhe").textContent = !au.ligado ? "o robô só analisa quando um analista pede"
+    : au.erro ? `${au.erro} · tenta de novo em alguns minutos`
+    : au.lendo_lista ? "lendo a lista do filtro agora…"
+    : [`${s.automaticos_hoje} analisados sozinho hoje`, au.pendentes ? `${au.pendentes} esperando` : "nenhum card novo esperando",
+       au.ultima_lista ? `lista lida há ${desde(au.ultima_lista)} min (${au.na_lista} no filtro)` : "lista ainda não lida"].join(" · ");
+  $("autoBotao").textContent = au.ligado ? "desligar" : "ligar";
+  $("autoBotao").dataset.ligar = au.ligado ? "" : "1";
   const c = s.sessao_crm;
   $("crm").innerHTML = `<div class="linha" style="align-items:center">
       <span class="pill ${c.existe ? "ok" : "alerta"}">${c.existe ? "sessão do CRM salva" : "sem sessão do CRM ainda"}</span>
@@ -210,6 +230,11 @@ $("senha").addEventListener("keydown", e => { if (e.key === "Enter") entrar(); }
 $("sair").onclick = () => sair();
 $("filtroObs").oninput = desenharObs;
 $("nome").addEventListener("keydown", e => { if (e.key === "Enter") $("criar").click(); });
+
+$("autoBotao").onclick = async () => {
+  await api("/api/admin/auto", {ligado: $("autoBotao").dataset.ligar === "1"});
+  atualizar();
+};
 
 $("criar").onclick = async () => {
   const nome = $("nome").value.trim();

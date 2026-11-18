@@ -63,6 +63,17 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · análise automática dos cards do filtro
+
+- Quando a fila dos analistas está vazia, o trabalhador do `robo/assistente.py` lê a lista do filtro das analistas
+  (`lote.listar`, o mesmo filtro do lote; só lê o funil, não põe tag), analisa um card novo por vez (com placa e sem tag de
+  analista) e, ao acabar, lê a lista de novo; sem card novo, espera 2 min; sem conseguir ler a lista, 5 min.
+- Pedido de analista passa sempre na frente (a fila dele é olhada antes de cada card automático).
+- Card que deu erro é tentado no máximo 2 vezes; já analisado/pulado não é refeito.
+- Liga/desliga na tela /admin (guardado em `robo/saida/assistente/auto.json`; padrão ligado, `auto=0` no `.env` muda o padrão).
+- Testado: ciclo com CRM simulado (ordem, prioridade, card novo na releitura, erro com 1 nova tentativa, desligado não
+  roda) e leitura real da lista no PowerCRM sem tela (7 cards em 7 s, nenhum analisado).
+
 ### 2026-11-18 · página de administração e banco das observações
 
 - `robo/admin.html` + rotas `/admin` e `/api/admin/*` em `robo/assistente.py`: senha no cabeçalho `X-Admin` (comparação em

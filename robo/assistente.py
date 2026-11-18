@@ -732,9 +732,108 @@ def analisar(pedido):
     guardar(pasta_exec, res, pedido)
 
 
+# ---------------- análise automática ----------------
+# Quando ninguém pediu nada, o robô lê a lista do filtro das analistas (o mesmo do lote: só lê o funil, não põe tag),
+# analisa um card novo por vez e, ao acabar a lista, lê de novo. Pedido de analista passa sempre na frente.
+
+ARQ_AUTO = PASTA / "auto.json"  # ligado/desligado (a tela /admin muda)
+ESPERA_SEM_NOVIDADE = 120  # s até ler a lista de novo quando não apareceu card novo
+ESPERA_ERRO_LISTA = 300  # s até tentar de novo quando não deu para ler a lista
+TENTATIVAS_AUTO = 2  # card que deu erro é tentado de novo só até aqui (não fica em loop)
+AUTO = {"pendentes": [], "proxima": 0.0, "ultima_lista": None, "na_lista": 0, "novos": 0, "erro": "",
+        "tentativas": {}, "lendo": False}
+
+
+def auto_ligado():
+    try:
+        return bool(json.loads(ARQ_AUTO.read_text(encoding="utf-8")).get("ligado", True))
+    except (OSError, ValueError):
+        return config.ENV.get("auto", "1") != "0"
+
+
+def ligar_auto(ligado):
+    ARQ_AUTO.parent.mkdir(parents=True, exist_ok=True)
+    ARQ_AUTO.write_text(json.dumps({"ligado": bool(ligado)}), encoding="utf-8")
+    if ligado:
+        AUTO["proxima"] = 0.0  # lê a lista já
+    print(f"{datetime.now():%H:%M:%S} · análise automática {'ligada' if ligado else 'desligada'}")
+
+
+def _ja_resolvido(codigo):
+    """Já analisado (ou pulado, ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
+    with _trava:
+        for k, v in TRABALHOS.items():
+            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "pulado", "fila", "rodando"):
+                return True
+    return AUTO["tentativas"].get(codigo, 0) >= TENTATIVAS_AUTO
+
+
+def _ler_lista_do_filtro():
+    from playwright.sync_api import sync_playwright
+
+    from .lote import listar, resumo
+    from .sessao import abrir, esquecer_sessao, proteger
+
+    with sync_playwright() as p:
+        browser, ctx, page = abrir(p, login_automatico=True)
+        try:
+            proteger(ctx)
+            itens, total, _ = listar(page, None, None)
+        finally:
+            browser.close()
+    if total is None:  # não veio a contagem do funil: sessão vencida ou CRM fora; a próxima tentativa entra de novo
+        esquecer_sessao()
+        raise RuntimeError("não deu para ler a lista do filtro (sessão do CRM vencida ou CRM fora do ar)")
+    return [resumo(i) for i in itens]
+
+
+def _proximo_automatico():
+    """Código do próximo card para a análise automática, ou None (desligada, esperando ou nada novo)."""
+    if not auto_ligado():
+        return None
+    while AUTO["pendentes"]:
+        codigo = AUTO["pendentes"].pop(0)
+        if not _ja_resolvido(codigo):
+            AUTO["tentativas"][codigo] = AUTO["tentativas"].get(codigo, 0) + 1
+            _atualizar(codigo, estado="fila", etapa="", erro="", inicio=time.time(), por=["automático"])
+            return codigo
+    if time.time() < AUTO["proxima"]:
+        return None
+    AUTO["lendo"] = True
+    try:
+        cards = _ler_lista_do_filtro()
+    except BaseException as e:  # SystemExit do login também: o servidor continua
+        AUTO.update(erro=str(e)[:200] or type(e).__name__, proxima=time.time() + ESPERA_ERRO_LISTA)
+        print(f"{datetime.now():%H:%M:%S} · análise automática: {AUTO['erro']}")
+        return None
+    finally:
+        AUTO["lendo"] = False
+    livres = [c["codigo"] for c in cards if c["placa"] and not c["analistas"]]
+    novos = [c for c in livres if not _ja_resolvido(c)]
+    AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
+                proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
+    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista, "
+          f"{len(novos)} novo(s) para analisar")
+    return _proximo_automatico() if novos and FILA.empty() else None  # analista pediu enquanto lia? ele vai primeiro
+
+
+def situacao_auto():
+    return {"ligado": auto_ligado(), "lendo_lista": AUTO["lendo"], "pendentes": len(AUTO["pendentes"]),
+            "na_lista": AUTO["na_lista"], "novos_na_ultima": AUTO["novos"], "erro": AUTO["erro"],
+            "ultima_lista": AUTO["ultima_lista"], "proxima": AUTO["proxima"] or None}
+
+
 def _trabalhador():
     while True:
-        pedido = FILA.get()
+        try:
+            pedido = FILA.get_nowait()  # pedido de analista sempre primeiro
+        except queue.Empty:
+            pedido = _proximo_automatico()
+            if not pedido:
+                try:
+                    pedido = FILA.get(timeout=3)
+                except queue.Empty:
+                    continue
         try:
             analisar(pedido)
         except BaseException as e:  # SystemExit do login, erro de rede...: o servidor continua de pé
@@ -932,6 +1031,9 @@ def situacao_admin():
                        "salva_em": f"{datetime.fromtimestamp(sessao_arq.stat().st_mtime):%d/%m/%Y %H:%M}" if sessao_arq.exists() else None,
                        "empresa": sessao.EMPRESA, "login_automatico": sessao.tem_credenciais(), "sem_tela": sessao.SEM_TELA},
         "fotos_login": fotos,
+        "auto": situacao_auto(),
+        "automaticos_hoje": sum(1 for t in trabalhos if t["estado"] == "pronto" and (t.get("fim") or 0) >= hoje
+                                and "automático" in (t.get("por") or [])),
     }
 
 
@@ -1041,6 +1143,9 @@ class Pedido(BaseHTTPRequestHandler):
             chave = nova_chave(nome)
             print(f"{datetime.now():%H:%M:%S} · admin criou a chave de {nome}")
             return self._enviar({"ok": True, "nome": nome[:60], "chave": chave})
+        if caminho == "/api/admin/auto":
+            ligar_auto(bool(dados.get("ligado")))
+            return self._enviar({"ok": True, "auto": situacao_auto()})
         if caminho == "/api/admin/revogar":
             nome = revogar_chave(str(dados.get("chave") or ""))
             if nome is None:
