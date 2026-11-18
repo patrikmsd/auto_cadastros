@@ -810,6 +810,7 @@ def _proximo_automatico():
         AUTO["lendo"] = False
     com_placa = [c["codigo"] for c in cards if c["placa"]]  # com ou sem tag de analista
     novos = [c for c in com_placa if not _ja_resolvido(c)]
+    AUTO["lista"] = [{k: c.get(k) for k in ("codigo", "placa", "veiculo", "analistas", "vistoria")} for c in cards]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
                 proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
     print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(com_placa)} com placa, "
@@ -818,9 +819,22 @@ def _proximo_automatico():
 
 
 def situacao_auto():
+    """Inclui a lista da última leitura do filtro, cada card com a situação do último trabalho dele."""
+    with _trava:
+        por_codigo = {}
+        for k, v in TRABALHOS.items():
+            for chave in {k, v.get("codigo")} - {None, ""}:
+                atual = por_codigo.get(chave)
+                if not atual or (v.get("inicio") or 0) >= (atual.get("inicio") or 0):
+                    por_codigo[chave] = v
+        cards = []
+        for c in AUTO.get("lista") or []:
+            t = por_codigo.get(c["codigo"]) or {}
+            cards.append({**c, **{k: t.get(k) for k in ("estado", "etapa", "erro", "inicio", "fim", "custo_rs", "situacao", "por")},
+                          "esperando": c["codigo"] in AUTO["pendentes"]})
     return {"ligado": auto_ligado(), "lendo_lista": AUTO["lendo"], "pendentes": len(AUTO["pendentes"]),
             "na_lista": AUTO["na_lista"], "novos_na_ultima": AUTO["novos"], "erro": AUTO["erro"],
-            "ultima_lista": AUTO["ultima_lista"], "proxima": AUTO["proxima"] or None}
+            "ultima_lista": AUTO["ultima_lista"], "proxima": AUTO["proxima"] or None, "cards": cards}
 
 
 def _trabalhador():
@@ -1055,16 +1069,25 @@ def observacoes_admin(limite=500):
     return saida
 
 
-def log_admin(linhas=300):
-    arquivo = LOGS / f"assistente-{datetime.now():%Y%m%d}.log"
+def log_admin(desde=None, linhas=400):
+    """Terminal da tela /admin. Sem `desde`: as últimas linhas. Com `desde` (posição em bytes devolvida antes): só o que
+    entrou depois. `arquivo` muda à meia-noite: a página recomeça quando ele muda."""
+    nome = f"assistente-{datetime.now():%Y%m%d}.log"
     try:
-        with arquivo.open("rb") as f:
+        with (LOGS / nome).open("rb") as f:
             f.seek(0, 2)
-            f.seek(max(0, f.tell() - 200_000))
-            texto = f.read().decode("utf-8", errors="replace")
+            fim = f.tell()
+            inicio = desde if desde is not None and 0 <= desde <= fim and fim - desde <= 400_000 else max(0, fim - 200_000)
+            f.seek(inicio)
+            bruto = f.read(fim - inicio)
     except OSError:
-        return ""
-    return "\n".join(texto.splitlines()[-linhas:])
+        return {"arquivo": nome, "pos": 0, "texto": "", "novo": True}
+    corte = bruto.rfind(b"\n") + 1  # só linhas inteiras; o resto vem na próxima
+    texto = bruto[:corte].decode("utf-8", errors="replace")
+    novo = inicio != desde
+    if novo:
+        texto = "\n".join(texto.splitlines()[-linhas:]) + ("\n" if texto else "")
+    return {"arquivo": nome, "pos": inicio + corte, "texto": texto, "novo": novo}
 
 
 # ---------------- servidor ----------------
@@ -1123,7 +1146,12 @@ class Pedido(BaseHTTPRequestHandler):
         if caminho == "/api/admin/observacoes":
             return self._enviar(observacoes_admin())
         if caminho == "/api/admin/log":
-            return self._enviar({"texto": log_admin()})
+            from urllib.parse import parse_qs
+
+            pq = parse_qs(q)
+            desde = (pq.get("desde") or [""])[0]
+            mesmo_dia = (pq.get("arquivo") or [""])[0] == f"assistente-{datetime.now():%Y%m%d}.log"
+            return self._enviar(log_admin(int(desde) if desde.isdigit() and mesmo_dia else None))
         m = re.match(r"^/api/admin/foto/(.+)$", caminho)
         if m and FOTO_LOGIN.match(m.group(1)) and (LOGS / m.group(1)).exists():
             return self._enviar((LOGS / m.group(1)).read_bytes(), "image/png")

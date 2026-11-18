@@ -40,6 +40,9 @@ th{font-size:12px;color:var(--sub);font-weight:600}
 .abas button{background:var(--card);color:var(--sub);border:1px solid var(--borda)}
 .abas button.ativa{background:var(--acento);color:#fff;border-color:var(--acento)}
 pre{background:var(--log);color:var(--logtxt);border-radius:10px;padding:12px;max-height:60vh;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;margin:0}
+.terminal{height:420px;max-height:none;font:12px/1.5 ui-monospace,Consolas,monospace}
+.terminal .e{color:#ff8a8a}.terminal .c{color:#7d8899}.terminal .a{color:#8fb3ff}.terminal .p{color:#6ee7a8}
+h2 button{margin-left:6px}
 .campos{font-size:12px;color:var(--sub);margin-top:4px}
 .fotos{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
 .fotos a{font-size:12px}
@@ -79,13 +82,20 @@ pre{background:var(--log);color:var(--logtxt);border-radius:10px;padding:12px;ma
       </div>
       <p class="sub" style="margin:8px 0 0">Quando ninguém está pedindo card, o robô lê a lista do filtro das analistas, analisa os cards
         novos (com ou sem tag de analista) e, ao terminar, lê a lista de novo. O pedido de um analista passa sempre na frente. Só leitura no CRM.</p>
+      <div class="tabela" style="margin-top:12px"><table><thead><tr><th>Card</th><th>Tag</th><th>Situação</th><th>Tempo</th><th>Custo</th></tr></thead>
+        <tbody id="listaAuto"></tbody></table></div>
+    </section>
+
+    <section class="caixa">
+      <h2>Terminal <span class="sub" id="termInfo">ao vivo</span>
+        <span style="flex:1"></span><button class="leve" id="termPausa">pausar</button><button class="leve" id="termLimpa">limpar</button></h2>
+      <pre id="terminal" class="terminal"></pre>
     </section>
 
     <div class="abas" id="abas">
       <button data-aba="analistas" class="ativa">Analistas</button>
       <button data-aba="observacoes">Observações dos analistas</button>
       <button data-aba="erros">Erros recentes</button>
-      <button data-aba="log">Log</button>
     </div>
 
     <section class="caixa" data-pagina="analistas">
@@ -108,10 +118,6 @@ pre{background:var(--log);color:var(--logtxt);border-radius:10px;padding:12px;ma
       <div class="tabela"><table><thead><tr><th>Card</th><th>Quem pediu</th><th>Motivo</th></tr></thead><tbody id="listaErros"></tbody></table></div>
     </section>
 
-    <section class="caixa escondido" data-pagina="log">
-      <h2>Log de hoje <span class="sub">(atualiza sozinho)</span></h2>
-      <pre id="log"></pre>
-    </section>
   </div>
 </main>
 <script>
@@ -146,6 +152,7 @@ async function entrar() {
 function sair(motivo) {
   clearInterval(timer);
   senha = "";
+  termPos = null;
   try { sessionStorage.removeItem("asx-admin"); } catch {}
   $("painel").classList.add("escondido");
   $("entrar").classList.remove("escondido");
@@ -191,9 +198,43 @@ async function atualizar() {
       <td>${esc((t.por || []).join(", "))}</td><td>${esc(t.erro)}</td></tr>`).join("")
     : `<tr><td colspan="3" class="vazio">Nenhum erro desde que o servidor ligou.</td></tr>`;
   $("atualizado").textContent = "atualizado às " + new Date().toLocaleTimeString("pt-BR");
+  const SIT = {rodando: ["alerta", "rodando"], pronto: ["ok", "pronto"], erro: ["erro", "erro"], fila: ["neutro", "na fila"]};
+  const dur = c => c.inicio ? Math.round(((c.estado === "rodando" ? Date.now() / 1000 : c.fim || c.inicio) - c.inicio)) : null;
+  const mmss = s => s == null ? "" : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  $("listaAuto").innerHTML = au.cards.length ? au.cards.map(c => {
+    const [cls, txt] = SIT[c.estado] || (c.esperando ? ["neutro", "esperando"] : ["neutro", "—"]);
+    return `<tr><td>${card(c)}<div class="sub">${esc(c.veiculo || "")}</div></td><td>${esc((c.analistas || []).join(", "))}</td>
+      <td><span class="pill ${cls}">${txt}</span>${c.estado === "rodando" && c.etapa ? `<div class="campos">${esc(c.etapa)}</div>` : ""}
+        ${c.estado === "erro" ? `<div class="campos">${esc(c.erro)}</div>` : ""}</td>
+      <td class="mono">${mmss(c.estado === "pronto" || c.estado === "rodando" || c.estado === "erro" ? dur(c) : null)}</td>
+      <td class="mono">${c.custo_rs != null && c.estado === "pronto" ? "R$ " + Number(c.custo_rs).toFixed(2).replace(".", ",") : ""}</td></tr>`;
+  }).join("") : `<tr><td colspan="5" class="vazio">${au.ligado ? "A lista do filtro ainda não foi lida." : "Análise automática desligada."}</td></tr>`;
   if (aba === "observacoes") await carregarObs();
-  if (aba === "log") await carregarLog();
 }
+
+// ---------- terminal: busca só o que entrou no log desde a última vez ----------
+let termPos = null, termArq = "", termPausado = false;
+const classe = l => /erro|error|traceback|falhou|exception|bloquead/i.test(l) ? "e" : /💲|tokens:/.test(l) ? "c"
+  : /análise automática|pediu|admin/i.test(l) ? "a" : /✅|pronto|resultado/i.test(l) ? "p" : "";
+async function terminal() {
+  if (termPausado || !senha) return;
+  const q = termPos == null ? "" : `?desde=${termPos}&arquivo=${encodeURIComponent(termArq)}`;
+  const d = (await api("/api/admin/log" + q)).dados;
+  const pre = $("terminal"), noFim = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 40;
+  if (d.novo) pre.innerHTML = "";
+  if (d.texto) {
+    pre.insertAdjacentHTML("beforeend", d.texto.split("\n").filter(Boolean)
+      .map(l => `<span class="${classe(l)}">${esc(l)}</span>\n`).join(""));
+    while (pre.childNodes.length > 6000) pre.removeChild(pre.firstChild);  // ~3000 linhas na tela
+  }
+  termPos = d.pos; termArq = d.arquivo;
+  $("termInfo").textContent = (termPausado ? "pausado" : "ao vivo") + " · " + d.arquivo;
+  if (noFim) pre.scrollTop = pre.scrollHeight;
+}
+setInterval(() => terminal().catch(() => {}), 2000);
+$("termPausa").onclick = () => { termPausado = !termPausado; $("termPausa").textContent = termPausado ? "continuar" : "pausar";
+  $("termInfo").textContent = termPausado ? "pausado" : "ao vivo"; };
+$("termLimpa").onclick = () => { $("terminal").innerHTML = ""; };
 
 async function carregarObs() {
   obs = (await api("/api/admin/observacoes")).dados || [];
@@ -212,11 +253,6 @@ function desenharObs() {
     : `<tr><td colspan="4" class="vazio">${obs.length ? "Nada com esse filtro." : "Nenhuma observação ainda."}</td></tr>`;
 }
 
-async function carregarLog() {
-  const pre = $("log"), noFim = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 30;
-  pre.textContent = (await api("/api/admin/log")).dados.texto || "(log de hoje vazio)";
-  if (noFim) pre.scrollTop = pre.scrollHeight;
-}
 
 async function copiar(texto) {
   try { await navigator.clipboard.writeText(texto); return true; } catch {}
@@ -267,7 +303,6 @@ document.addEventListener("click", async e => {
     for (const x of document.querySelectorAll("#abas button")) x.classList.toggle("ativa", x === b);
     for (const p of document.querySelectorAll("[data-pagina]")) p.classList.toggle("escondido", p.dataset.pagina !== aba);
     if (aba === "observacoes") carregarObs();
-    if (aba === "log") carregarLog();
   }
   if (b.dataset.foto) { // a foto precisa da senha no cabeçalho: busca e abre numa aba nova
     const r = await fetch("/api/admin/foto/" + encodeURIComponent(b.dataset.foto), {headers: {"X-Admin": senha}});
