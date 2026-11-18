@@ -709,15 +709,17 @@ def analisar(pedido):
             _foto_tela(page, pasta_exec, "02_busca")
             if not achados:
                 return _atualizar(pedido, estado="erro", etapa="", erro="nenhum card encontrado com essa busca")
-            livres = [c for c in achados if not c["analistas"]]
-            if not livres:  # card com tag de nome de analista: alguém já está cuidando dele, o robô não abre
+            # card com tag de nome de analista: alguém já está cuidando dele, o robô não abre (exceto as liberadas,
+            # config.ANALISTAS_LIBERADAS, hoje a BARBARA, que está testando). Sem tag vem antes.
+            livres = sorted((c for c in achados if config.card_liberado(c["analistas"])), key=lambda c: bool(c["analistas"]))
+            if not livres:
                 return _atualizar(pedido, estado="pulado", etapa="", erro=f"card com analista ({', '.join(achados[0]['analistas'])}): não foi aberto")
             alvo = livres[0]
             pasta_card = pasta_exec / alvo["placa"]
             pasta_card.mkdir(parents=True, exist_ok=True)
             salvar(pasta_card, "cards_filtro.json", [alvo])
             _atualizar(pedido, placa=alvo["placa"], veiculo=alvo["veiculo"], etapa="lendo o card e baixando as fotos")
-            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido)
+            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido, liberadas=True)
         finally:
             browser.close()
             parar.set()
@@ -765,10 +767,11 @@ def ligar_auto(ligado):
 
 
 def _ja_resolvido(codigo):
-    """Já analisado (ou pulado, ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
+    """Já analisado (ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
     with _trava:
         for k, v in TRABALHOS.items():
-            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "pulado", "fila", "rodando"):
+            # "pulado" não conta: card pulado por tag de analista que depois foi liberada entra de novo
+            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "fila", "rodando"):
                 return True
     return AUTO["tentativas"].get(codigo, 0) >= TENTATIVAS_AUTO
 
@@ -813,12 +816,13 @@ def _proximo_automatico():
         return None
     finally:
         AUTO["lendo"] = False
-    livres = [c["codigo"] for c in cards if c["placa"] and not c["analistas"]]  # tag de nome de analista: não analisa
+    # tag de nome de analista: não analisa, exceto as liberadas (config.ANALISTAS_LIBERADAS)
+    livres = [c["codigo"] for c in cards if c["placa"] and config.card_liberado(c["analistas"])]
     novos = [c for c in livres if not _ja_resolvido(c)]
     AUTO["lista"] = [{k: c.get(k) for k in ("codigo", "placa", "veiculo", "analistas", "vistoria")} for c in cards]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
                 proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
-    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista, "
+    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista ou liberada(s) ({", ".join(sorted(config.ANALISTAS_LIBERADAS)) or "nenhuma"}), "
           f"{len(novos)} novo(s) para analisar")
     return _proximo_automatico() if novos and FILA.empty() else None  # analista pediu enquanto lia? ele vai primeiro
 

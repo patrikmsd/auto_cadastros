@@ -63,6 +63,14 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · cards da BARBARA também são analisados
+
+- `config.ANALISTAS_LIBERADAS` (`.env`: `analistas_liberadas=BARBARA`, separado por vírgula; vazio = nenhuma; padrão
+  BARBARA): card com tag **só** de analistas dessa lista é analisado pelo assistente (automático e pedido). Tag de
+  qualquer outra analista (ou BARBARA + outra) continua pulada. Demo e lote não mudam.
+- "pulado" não segura mais o card: quando uma analista é liberada, os cards dela entram na próxima leitura.
+- Lista real nesse dia: 94 no filtro, 1 sem tag + 18 só BARBARA entram; 75 de outras analistas ficam de fora.
+
 ### 2026-11-18 · digitação no card real e FIPE "igual ao card" (extensão 0.13.0)
 
 - Testado no PowerCRM real (Playwright, só leitura): o CRM usa jQuery 1.12.4 + Bootstrap 3.3.7, cujo enforceFocus é um

@@ -35,6 +35,14 @@ NOMES_ANALISTAS = [
     "ESTER", "ESTER DIAS", "JEFFERSON", "PAMMELA", "MARIA CLARA", "SILVIA", "LUANA", "CINTIA", "THAYNA",
     "HELOISE", "BARBARA", "CARINA", "GEOVANNA", "AMANDA", "VITORIA", "KEITY", "NICOLAS", "GUILHERME",
 ]
+# Card com tag SÓ de analistas desta lista é analisado pelo assistente (automático e pedido); com tag de qualquer outra
+# analista continua pulado. .env: analistas_liberadas=BARBARA,PAMMELA (vazio = nenhuma). Demo e lote não usam.
+ANALISTAS_LIBERADAS = {n.strip().upper() for n in ENV.get("analistas_liberadas", "BARBARA").split(",") if n.strip()}
+
+
+def card_liberado(analistas):
+    """Sem tag de analista, ou só com tags de analistas liberadas."""
+    return all(a.strip().upper() in ANALISTAS_LIBERADAS for a in analistas or [])
 
 PASTA_SESSAO = RAIZ / "robo" / ".sessao"
 PASTA_SAIDA = RAIZ / "robo" / "saida"

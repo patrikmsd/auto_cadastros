@@ -233,10 +233,11 @@ def baixar_anexos_cotacao(ctx, rede, pasta_fotos, inicio, aba="Cotações"):
     return indice
 
 
-def ler_card(page, ctx, alvo, pasta, rede, busca=None):
+def ler_card(page, ctx, alvo, pasta, rede, busca=None, liberadas=False):
     """Abre um card SEM analista (só leitura), salva abas e fotos em `pasta`.
-    Antes de clicar recarrega o filtro da semana, ou refaz a busca pelo código se `busca` vier preenchida."""
-    if alvo["analistas"]:
+    Antes de clicar recarrega o filtro da semana, ou refaz a busca pelo código se `busca` vier preenchida.
+    liberadas=True (só o assistente): abre também card com tag só de analistas de config.ANALISTAS_LIBERADAS."""
+    if alvo["analistas"] and not (liberadas and config.card_liberado(alvo["analistas"])):
         raise ValueError(f"O card {alvo['placa']} tem analista ({', '.join(alvo['analistas'])}): não será aberto.")
     pasta.mkdir(parents=True, exist_ok=True)
     rede.clear()
