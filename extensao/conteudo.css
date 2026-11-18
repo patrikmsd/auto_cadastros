@@ -32,3 +32,13 @@
 @keyframes asx-respira{50%{color:#d97706}}
 @keyframes asx-pisca{50%{box-shadow:0 0 0 6px rgba(49,87,213,.35)}}
 @media (prefers-reduced-motion:reduce){.asx-fantasma,.asx-moldura,.asx-destaque{animation:none !important}}
+
+/* selo em cima do card no funil: já analisado pelo robô (só desenho; não muda nada no card) */
+.asx-funil{display:block !important;margin:0 0 6px !important;padding:2px 8px !important;border-radius:6px !important;
+  font:600 11px/16px system-ui,"Segoe UI",sans-serif !important;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asx-funil.asx-f-ok{background:#e5f6ec !important;color:#14804a !important}
+.asx-funil.asx-f-conferir{background:#fff3dc !important;color:#8a4f00 !important}
+.asx-funil.asx-f-diverge{background:#fde8e8 !important;color:#c0262d !important}
+.asx-funil.asx-f-rodando{background:#e8eefc !important;color:#3157d5 !important}
+.asx-funil.asx-f-fila{background:#eef0f4 !important;color:#5b6480 !important}
+.asx-funil.asx-f-erro{background:#eef0f4 !important;color:#c0262d !important}

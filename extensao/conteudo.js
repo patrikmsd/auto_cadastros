@@ -890,5 +890,62 @@
     @media (max-width:900px){.c-meio{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 40vh}}
     @media (prefers-reduced-motion:reduce){.painel,.giro,.tudo,.olho *,.fotinhas i::after,.zzz text,.destaque .feixe,.mini::after{animation:none}#c-img{transition:none}}`;
 
+  // ---------------- selo em cima de cada card do funil ----------------
+  // O card do funil é <section id="<código>" class="pwrcrm-card">. Pergunta ao servidor a situação dos que estão na tela
+  // (a cada 8 s) e redesenha o selo a cada segundo (o CRM refaz os cards quando rola a coluna ou filtra).
+  const SELO_SIT = {OK: ["asx-f-ok", "confere"], VERIFICAR: ["asx-f-conferir", "conferir"], DIVERGENTE: ["asx-f-diverge", "divergente"]};
+  let situacoesFunil = {}, ultimaBusca = 0, buscando = false;
+  const quando = t => {
+    const d = new Date(t * 1000), hoje = new Date().toDateString() === d.toDateString();
+    return (hoje ? "" : d.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " ") +
+      d.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
+  };
+
+  function textoSelo(s) {
+    if (s.estado === "rodando") return ["asx-f-rodando", "⏳ Robô analisando agora"];
+    if (s.estado === "fila") return ["asx-f-fila", "Na fila do robô"];
+    if (s.estado === "erro") return ["asx-f-erro", "Análise do robô deu erro"];
+    if (s.estado !== "pronto") return null;
+    const [cls, sit] = SELO_SIT[s.situacao] || ["asx-f-ok", ""];
+    return [cls, `✓ Analisado ${s.fim ? quando(s.fim) : ""}${sit ? ` · ${sit}` : ""}${s.sugeridos ? ` · ${s.sugeridos} sugest${s.sugeridos > 1 ? "ões" : "ão"}` : ""}`];
+  }
+
+  async function buscarSituacoes(codigos) {
+    if (buscando) return;
+    buscando = true;
+    try {
+      const novo = {};
+      for (let i = 0; i < codigos.length; i += 150) {
+        const r = await pedir({tipo: "situacoes", codigos: codigos.slice(i, i + 150)});
+        if (r.status !== 200) return;  // servidor fora/antigo: fica sem selo (não atrapalha o CRM)
+        Object.assign(novo, r.dados);
+      }
+      situacoesFunil = novo;
+      ultimaBusca = Date.now();
+    } finally {
+      buscando = false;
+    }
+  }
+
+  function selosNoFunil() {
+    const cards = [...document.querySelectorAll("section.pwrcrm-card[id]")].filter(s => /^[A-Za-z0-9]{6,}$/.test(s.id));
+    if (!cards.length) return;
+    if (Date.now() - ultimaBusca > 8000) buscarSituacoes(cards.map(s => s.id));
+    for (const s of cards) {
+      const info = situacoesFunil[s.id] ? textoSelo(situacoesFunil[s.id]) : null;
+      let selo = s.querySelector(":scope > .asx-funil");
+      if (!info) { selo?.remove(); continue; }
+      if (!selo) {
+        selo = document.createElement("div");
+        selo.className = "asx-funil";
+        s.prepend(selo);
+      }
+      const [cls, texto] = info;
+      if (selo.textContent !== texto) selo.textContent = texto;
+      if (!selo.classList.contains(cls)) selo.className = "asx-funil " + cls;
+    }
+  }
+
   setInterval(ciclo, 1000);
+  setInterval(selosNoFunil, 1000);
 })();

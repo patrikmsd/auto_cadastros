@@ -233,11 +233,10 @@ def baixar_anexos_cotacao(ctx, rede, pasta_fotos, inicio, aba="Cotações"):
     return indice
 
 
-def ler_card(page, ctx, alvo, pasta, rede, busca=None, com_analista=False):
+def ler_card(page, ctx, alvo, pasta, rede, busca=None):
     """Abre um card SEM analista (só leitura), salva abas e fotos em `pasta`.
-    Antes de clicar recarrega o filtro da semana, ou refaz a busca pelo código se `busca` vier preenchida.
-    com_analista=True (o assistente): abre também card com tag de analista; demo e lote continuam pulando."""
-    if alvo["analistas"] and not com_analista:
+    Antes de clicar recarrega o filtro da semana, ou refaz a busca pelo código se `busca` vier preenchida."""
+    if alvo["analistas"]:
         raise ValueError(f"O card {alvo['placa']} tem analista ({', '.join(alvo['analistas'])}): não será aberto.")
     pasta.mkdir(parents=True, exist_ok=True)
     rede.clear()

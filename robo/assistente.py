@@ -704,14 +704,15 @@ def analisar(pedido):
             _foto_tela(page, pasta_exec, "02_busca")
             if not achados:
                 return _atualizar(pedido, estado="erro", etapa="", erro="nenhum card encontrado com essa busca")
-            # card com tag de analista também é analisado (o robô só lê; o analista usa o resultado para validar).
-            # Se a busca achar mais de um, prefere o que ainda está sem analista.
-            alvo = next((c for c in achados if not c["analistas"]), achados[0])
+            livres = [c for c in achados if not c["analistas"]]
+            if not livres:  # card com tag de nome de analista: alguém já está cuidando dele, o robô não abre
+                return _atualizar(pedido, estado="pulado", etapa="", erro=f"card com analista ({', '.join(achados[0]['analistas'])}): não foi aberto")
+            alvo = livres[0]
             pasta_card = pasta_exec / alvo["placa"]
             pasta_card.mkdir(parents=True, exist_ok=True)
             salvar(pasta_card, "cards_filtro.json", [alvo])
             _atualizar(pedido, placa=alvo["placa"], veiculo=alvo["veiculo"], etapa="lendo o card e baixando as fotos")
-            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido, com_analista=True)
+            pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido)
         finally:
             browser.close()
             parar.set()
@@ -759,11 +760,10 @@ def ligar_auto(ligado):
 
 
 def _ja_resolvido(codigo):
-    """Já analisado (ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
+    """Já analisado (ou pulado, ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
     with _trava:
         for k, v in TRABALHOS.items():
-            # "pulado" (card com analista, regra antiga) não conta: agora esses também são analisados
-            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "fila", "rodando"):
+            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "pulado", "fila", "rodando"):
                 return True
     return AUTO["tentativas"].get(codigo, 0) >= TENTATIVAS_AUTO
 
@@ -808,25 +808,39 @@ def _proximo_automatico():
         return None
     finally:
         AUTO["lendo"] = False
-    com_placa = [c["codigo"] for c in cards if c["placa"]]  # com ou sem tag de analista
-    novos = [c for c in com_placa if not _ja_resolvido(c)]
+    livres = [c["codigo"] for c in cards if c["placa"] and not c["analistas"]]  # tag de nome de analista: não analisa
+    novos = [c for c in livres if not _ja_resolvido(c)]
     AUTO["lista"] = [{k: c.get(k) for k in ("codigo", "placa", "veiculo", "analistas", "vistoria")} for c in cards]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
                 proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
-    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(com_placa)} com placa, "
+    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista, "
           f"{len(novos)} novo(s) para analisar")
     return _proximo_automatico() if novos and FILA.empty() else None  # analista pediu enquanto lia? ele vai primeiro
+
+
+def _ultimo_por_codigo():
+    """código (e o que foi digitado no pedido) → último trabalho daquele card. Chamar com _trava."""
+    por_codigo = {}
+    for k, v in TRABALHOS.items():
+        for chave in {k, v.get("codigo")} - {None, ""}:
+            atual = por_codigo.get(chave)
+            if not atual or (v.get("inicio") or 0) >= (atual.get("inicio") or 0):
+                por_codigo[chave] = v
+    return por_codigo
+
+
+def situacoes(codigos):
+    """Para o selo em cima de cada card no funil (extensão): só o necessário, dos códigos pedidos."""
+    with _trava:
+        por_codigo = _ultimo_por_codigo()
+        return {c: {k: t.get(k) for k in ("estado", "fim", "situacao", "sugeridos", "etapa")}
+                for c in codigos if (t := por_codigo.get(c))}
 
 
 def situacao_auto():
     """Inclui a lista da última leitura do filtro, cada card com a situação do último trabalho dele."""
     with _trava:
-        por_codigo = {}
-        for k, v in TRABALHOS.items():
-            for chave in {k, v.get("codigo")} - {None, ""}:
-                atual = por_codigo.get(chave)
-                if not atual or (v.get("inicio") or 0) >= (atual.get("inicio") or 0):
-                    por_codigo[chave] = v
+        por_codigo = _ultimo_por_codigo()
         cards = []
         for c in AUTO.get("lista") or []:
             t = por_codigo.get(c["codigo"]) or {}
@@ -1195,6 +1209,9 @@ class Pedido(BaseHTTPRequestHandler):
             return self._proibido()
         if self.path == "/api/quem":  # a tela de opções da extensão testa a conexão aqui
             return self._enviar({"analista": quem, "versao": VERSAO, **posicao(None)})
+        m = re.match(r"^/api/situacoes\?c=([\w,-]*)$", self.path)
+        if m:  # selos no funil: até 300 códigos por vez
+            return self._enviar(situacoes([c for c in m.group(1).split(",") if c][:300]))
         if self.path == "/api/fila":
             with _trava:
                 return self._enviar(sorted(({"pedido": k, **v} for k, v in TRABALHOS.items()), key=lambda x: -x.get("inicio", 0)))

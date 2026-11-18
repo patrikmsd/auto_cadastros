@@ -27,6 +27,10 @@ async function chamar(msg) {
       const r = await fetch(`${SERVIDOR}/api/quem`, {headers: H, cache: "no-store"});
       return {status: r.status, dados: await json(r)};
     }
+    if (msg.tipo === "situacoes") {  // selos em cima dos cards do funil
+      const r = await fetch(`${SERVIDOR}/api/situacoes?c=${msg.codigos.map(encodeURIComponent).join(",")}`, {headers: H, cache: "no-store"});
+      return {status: r.status, dados: await json(r)};
+    }
     if (msg.tipo === "resultado") {
       const r = await fetch(`${SERVIDOR}/api/resultado/${encodeURIComponent(msg.chave)}`, {headers: H, cache: "no-store"});
       return {status: r.status, dados: await json(r)};
