@@ -51,6 +51,8 @@ sudo .venv/bin/python -m playwright install-deps chromium
 .venv/bin/python -m playwright install chromium
 
 echo "== permissões"
+# .env copiado/criado com sudo fica do root: o serviço roda como $USUARIO e precisa ler
+[ -O .env ] || sudo chown "$USUARIO": .env
 chmod 600 .env
 mkdir -p robo/saida/logs robo/.sessao
 chmod 700 robo/.sessao
