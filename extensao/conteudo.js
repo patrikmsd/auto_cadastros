@@ -350,6 +350,8 @@
       c.foto ? `<button data-acao="foto" data-rotulo="${esc(c.foto)}">foto</button>` : "",
       estado === "preenchido" ? `<button data-acao="desfazer" data-nome="${esc(c.nome)}">desfazer</button>` : "",
       c.pode_preencher && c.encontrado && estado === "sugerido" ? `<button class="pri" data-acao="por" data-nome="${esc(c.nome)}">preencher</button>` : "",
+      // card com valor diferente do documento (endereço): troca na tela pelo do documento; o analista confere e salva
+      c.pode_trocar && (estado === "conferir" || estado === "diverge") ? `<button class="pri" data-acao="por" data-nome="${esc(c.nome)}" title="troca o que está no card pelo valor do documento (só na tela; você salva)">usar o do documento</button>` : "",
     ].join("");
     const valor = estado === "sugerido" || estado === "preenchido" ? `<div class="valor">${esc(estado === "preenchido" ? preenchidos[c.nome].valor : c.encontrado)}</div>`
       : estado === "ok" ? "" : `<div class="de-para"><span>no card: <b>${esc(c.atual || "(vazio)")}</b></span>${c.encontrado ? `<span>encontrado: <b>${esc(c.encontrado)}</b></span>` : ""}</div>`;

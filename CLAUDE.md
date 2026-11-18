@@ -63,6 +63,15 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · endereço do comprovante sugerido (extensão 0.14.0)
+
+- Endereço (CEP, logradouro, número, bairro): "...", "-", "0", "S/N" no card contam como vazio → vira **sugestão** com
+  "preencher" (`ENFEITE` em `robo/assistente.py`). Card com endereço diferente do comprovante → "conferir" com o botão
+  **usar o do documento** (campo `pode_trocar`; troca só na tela, o analista salva). Número: "00115" = "115".
+- Testado refazendo 4 resultados gravados (casos "...", "S/N", "Rua Alpha6" × "RUA ALPHA", "00115").
+- Diagnóstico da digitação: o Chrome do analista ainda rodava a 0.12 (a 0.13 não tinha sido recarregada). Depois de
+  atualizar a pasta, é preciso clicar em ↻ em chrome://extensions.
+
 ### 2026-11-18 · cards da BARBARA também são analisados
 
 - `config.ANALISTAS_LIBERADAS` (`.env`: `analistas_liberadas=BARBARA`, separado por vírgula; vazio = nenhuma; padrão

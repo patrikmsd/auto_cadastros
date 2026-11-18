@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Assistente de conferência · PowerCRM",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Mostra dentro do card do PowerCRM o que o robô encontrou nos documentos e fotos. Não salva nada: quem salva é o analista.",
   "permissions": [
     "storage"

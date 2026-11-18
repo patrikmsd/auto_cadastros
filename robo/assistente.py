@@ -43,6 +43,7 @@ CABECALHO = "X-Assistente"  # toda chamada da API exige: página de outro site n
 CHAVE = "X-Chave"  # chave do analista: obrigatória para quem chega pela rede (o próprio PC do servidor dispensa)
 ANALISTAS = PASTA / "analistas.json"  # chave → nome do analista (python -m robo.assistente --nova-chave "Nome")
 VAZIOS = ("", "Selecione", "Não Informado", None)
+ENFEITE = re.compile(r"^\s*(?:[.\-_/0\s]*|S\s*/?\s*N[º°o]?)\s*$", re.I)  # "...", "-", "0", "S/N": endereço de enfeite no card
 PERGUNTA_DOCS = """Cadastro de proteção veicular. Você recebe {n} imagens, nesta ordem (o rótulo é onde a foto foi enviada, que pode estar ERRADO):
 {ordem}
 Para CADA imagem diga o que ela realmente mostra e só leia campos de documento que estejam de fato na imagem. NÃO invente:
@@ -207,12 +208,15 @@ def montar(pasta_card, r, codigo, segundos=None, custo=None):
         # o rótulo mais longo que bate: "Anexo (Atividades): Cnh correta" não pode virar "Anexo (Atividades): Cnh"
         return max((rot for rot in imagens if origem and origem.startswith(rot)), key=len, default="")
 
-    def novo(aba, nome, rotulo, encontrado, fonte, status, nota="", pode=True, atual=None):
+    def novo(aba, nome, rotulo, encontrado, fonte, status, nota="", pode=True, atual=None, trocar=False):
         atual = atuais.get(nome, "") if atual is None else atual
         atual = "" if atual in VAZIOS else atual
         campos.append({"aba": aba, "nome": nome, "rotulo": rotulo, "atual": atual, "encontrado": encontrado, "fonte": fonte,
                        "foto": foto_de(fonte), "status": status, "nota": nota,
-                       "pode_preencher": pode and status == "sugerido" and nome != "vhclFipeCode"})
+                       "pode_preencher": pode and status == "sugerido" and nome != "vhclFipeCode",
+                       # card com valor diferente do documento: a extensão oferece "usar o do documento" (o analista decide)
+                       "pode_trocar": trocar and pode and status in ("conferir", "diverge") and bool(encontrado)
+                                      and not str(encontrado).startswith("não encontrado")})
 
     # 1) campos vazios que o CRLV do próprio veículo preenche (as mesmas regras do --preencher)
     try:
@@ -242,20 +246,23 @@ def montar(pasta_card, r, codigo, segundos=None, custo=None):
     so_digitos = lambda t: re.sub(r"\D", "", str(t or ""))
 
     def avaliar(aba, nome, rotulo, achado, origem, atual=None, igual=None, nota_dif="", sem_doc="não encontrado no documento",
-                dif="diverge", pode=True):
-        """Card × documento: vazio no card → sugestão; igual → confere; diferente → diverge (ou conferir)."""
+                dif="diverge", pode=True, enfeite=False, trocar=False):
+        """Card × documento: vazio no card → sugestão; igual → confere; diferente → diverge (ou conferir).
+        enfeite: "...", "-", "0", "S/N" no card contam como vazio (endereço). trocar: oferece "usar o do documento"."""
         if nome in feitos:
             return
         atual = atuais.get(nome, "") if atual is None else atual
         atual = "" if atual in VAZIOS else atual
+        placeholder = enfeite and atual and ENFEITE.match(str(atual))
         if not achado:
             novo(aba, nome, rotulo, "não encontrado", origem, "conferir", sem_doc, atual=atual)
-        elif not atual:
-            novo(aba, nome, rotulo, achado, origem, "sugerido", pode=pode, atual=atual)
+        elif not atual or placeholder:
+            novo(aba, nome, rotulo, achado, origem, "sugerido", f"no card está só \"{atual}\"" if placeholder else "",
+                 pode=pode, atual=atual)
         else:
             bate = (igual or (lambda a, b: _so_letras(a) == _so_letras(b)))(atual, achado)
             novo(aba, nome, rotulo, achado, origem, "ok" if bate else dif, "" if bate else (nota_dif or f"no card: {atual}"),
-                 pode=pode, atual=atual)
+                 pode=pode, atual=atual, trocar=trocar)
         feitos.add(nome)
 
     if docs:
@@ -323,13 +330,17 @@ def montar(pasta_card, r, codigo, segundos=None, custo=None):
             feitos.add("clntPhoneMobile1")
         f_comp = fonte("comprovante de endereço")
         sem_comp = sem("comprovante de endereço") or "não encontrado no comprovante"
-        avaliar("Contato", "clntAddressZipcode", "CEP", so_digitos(comp.get("cep")), f_comp, sem_doc=sem_comp, igual=digitos)
-        avaliar("Contato", "clntAddress", "Endereço", (comp.get("logradouro") or "").upper(), f_comp, sem_doc=sem_comp, dif="conferir",
-                igual=lambda a, b: len(set(_palavras(a)) & set(_palavras(b))) >= 2)
-        avaliar("Contato", "clntAddressNumber", "Número", so_digitos(comp.get("numero")), f_comp,
-                sem_doc=sem("comprovante de endereço") or "não encontrado em nenhum documento", igual=digitos, dif="conferir")
-        avaliar("Contato", "clntAddressNeighborhood", "Bairro", (comp.get("bairro") or "").upper(), f_comp, sem_doc=sem_comp, dif="conferir",
-                igual=lambda a, b: _palavras(a) == _palavras(b))
+        # endereço do comprovante: "..."/"0"/"S/N" no card vira sugestão; diferente → conferir com "usar o do documento"
+        numero = lambda a, b: so_digitos(a).lstrip("0") == so_digitos(b).lstrip("0")  # "00115" = "115"
+        end = dict(sem_doc=sem_comp, enfeite=True, trocar=True)
+        avaliar("Contato", "clntAddressZipcode", "CEP", so_digitos(comp.get("cep")), f_comp, igual=digitos, **end)
+        avaliar("Contato", "clntAddress", "Endereço", (comp.get("logradouro") or "").upper(), f_comp, dif="conferir",
+                igual=lambda a, b: len(set(_palavras(a)) & set(_palavras(b))) >= 2, **end)
+        avaliar("Contato", "clntAddressNumber", "Número", so_digitos(comp.get("numero")).lstrip("0") or so_digitos(comp.get("numero")),
+                f_comp, igual=numero, dif="conferir",
+                **{**end, "sem_doc": sem("comprovante de endereço") or "não encontrado em nenhum documento"})
+        avaliar("Contato", "clntAddressNeighborhood", "Bairro", (comp.get("bairro") or "").upper(), f_comp, dif="conferir",
+                igual=lambda a, b: _palavras(a) == _palavras(b), **end)
 
         # veículo (aba Cotações): CRLV + FIPE oficial + fotos
         f_crlv = fonte("CRLV do veículo")
