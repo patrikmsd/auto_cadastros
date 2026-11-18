@@ -1,0 +1,524 @@
+{
+  "version": "32.6.4",
+  "data": "<mxGraphModel dx=\"5282\" dy=\"2493\" grid=\"1\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"1\" arrows=\"1\" fold=\"1\" page=\"1\" pageScale=\"1\" pageWidth=\"827\" pageHeight=\"1169\" math=\"0\" shadow=\"0\"><root><mxCell id=\"0\"/><mxCell id=\"1\" parent=\"0\"/><mxCell id=\"2\" parent=\"1\" style=\"swimlane;startSize=36;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#0C447C;fontStyle=1;fontSize=14;rounded=1;arcSize=4;html=1;whiteSpace=wrap;\" value=\"1. Acesso ao PowerCRM\" vertex=\"1\"><mxGeometry height=\"406\" width=\"500\" x=\"240\" y=\"606\" as=\"geometry\"/></mxCell><mxCell id=\"3\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;1&lt;/b&gt; · Preencher &quot;Seu e-mail&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"4\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;2&lt;/b&gt; · Preencher &quot;Sua senha&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"124\" as=\"geometry\"/></mxCell><mxCell id=\"5\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;3&lt;/b&gt; · Clicar em &quot;Acessar&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"192\" as=\"geometry\"/></mxCell><mxCell id=\"6\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;4&lt;/b&gt; · Selecionar a empresa\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"260\" as=\"geometry\"/></mxCell><mxCell id=\"7\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;5&lt;/b&gt; · Abrir o Dashboard\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"328\" as=\"geometry\"/></mxCell><mxCell id=\"8\" parent=\"2\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3DE;strokeColor=#3B6D11;fontColor=#27500A;fontSize=11;align=left;spacingLeft=6;\" value=\"Login automático com credencial guardada fora do código\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"260\" y=\"328\" as=\"geometry\"/></mxCell><mxCell id=\"9\" edge=\"1\" parent=\"2\" source=\"7\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"8\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"10\" edge=\"1\" parent=\"2\" source=\"3\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"4\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"11\" edge=\"1\" parent=\"2\" source=\"4\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"5\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"12\" edge=\"1\" parent=\"2\" source=\"5\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"6\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"13\" edge=\"1\" parent=\"2\" source=\"6\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"7\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"14\" parent=\"1\" style=\"swimlane;startSize=36;fillColor=#008a00;strokeColor=#005700;fontColor=#ffffff;fontStyle=1;fontSize=14;rounded=1;arcSize=4;html=1;whiteSpace=wrap;\" value=\"2. Localizar cards no Pipeline\" vertex=\"1\"><mxGeometry height=\"800\" width=\"500\" x=\"820\" y=\"606\" as=\"geometry\"/></mxCell><mxCell id=\"15\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;6&lt;/b&gt; · Clicar em &quot;Pipeline&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"16\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;7&lt;/b&gt; · Clicar em &quot;Filtrar&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"124\" as=\"geometry\"/></mxCell><mxCell id=\"17\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;8&lt;/b&gt; · Abrir &quot;Selecione&quot; (etapas)\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"192\" as=\"geometry\"/></mxCell><mxCell id=\"18\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;9&lt;/b&gt; · Marcar &quot;ANALISAR – CADASTRO COM PENDÊNCIAS LEVES&quot;\" vertex=\"1\"><mxGeometry height=\"56\" width=\"220\" x=\"20\" y=\"260\" as=\"geometry\"/></mxCell><mxCell id=\"19\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;10&lt;/b&gt; · Marcar &quot;ANALISAR – CADASTRO COMPLETO&quot;\" vertex=\"1\"><mxGeometry height=\"56\" width=\"220\" x=\"20\" y=\"340\" as=\"geometry\"/></mxCell><mxCell id=\"20\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;11&lt;/b&gt; · Abrir &quot;Filtrar por atividades&quot;\" vertex=\"1\"><mxGeometry height=\"56\" width=\"220\" x=\"20\" y=\"420\" as=\"geometry\"/></mxCell><mxCell id=\"21\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;12&lt;/b&gt; · Marcar &quot;Em aprovação&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"500\" as=\"geometry\"/></mxCell><mxCell id=\"22\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;13&lt;/b&gt; · Marcar &quot;Retornadas&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"568\" as=\"geometry\"/></mxCell><mxCell id=\"23\" parent=\"14\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;14&lt;/b&gt; · Abrir um card.\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"636\" as=\"geometry\"/></mxCell><mxCell id=\"24\" parent=\"14\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"&quot;Filtrar apenas os cards que ainda não foram iniciados pelas analistas de cadastro.&quot;\" vertex=\"1\"><mxGeometry height=\"60\" width=\"220\" x=\"260\" y=\"636\" as=\"geometry\"/></mxCell><mxCell id=\"25\" edge=\"1\" parent=\"14\" source=\"23\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"24\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"26\" edge=\"1\" parent=\"14\" source=\"15\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"16\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"27\" edge=\"1\" parent=\"14\" source=\"16\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"17\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"28\" edge=\"1\" parent=\"14\" source=\"17\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"18\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"29\" edge=\"1\" parent=\"14\" source=\"18\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"19\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"30\" edge=\"1\" parent=\"14\" source=\"19\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"20\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"31\" edge=\"1\" parent=\"14\" source=\"20\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"21\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"32\" edge=\"1\" parent=\"14\" source=\"21\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"22\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"33\" edge=\"1\" parent=\"14\" source=\"22\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"23\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"34\" edge=\"1\" parent=\"1\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" value=\"\"><mxGeometry relative=\"1\" x=\"0.1688\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"480\" y=\"860\"/><mxPoint x=\"780\" y=\"860\"/><mxPoint x=\"780\" y=\"690\"/><mxPoint x=\"810\" y=\"690\"/></Array><mxPoint x=\"480\" y=\"956\" as=\"sourcePoint\"/><mxPoint x=\"810\" y=\"710\" as=\"targetPoint\"/></mxGeometry></mxCell><mxCell id=\"35\" parent=\"1\" style=\"swimlane;startSize=34;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#0C447C;fontStyle=1;fontSize=14;rounded=1;arcSize=4;html=1;whiteSpace=wrap;\" value=\"3. Conferência do card\" vertex=\"1\"><mxGeometry height=\"590\" width=\"740\" x=\"1350\" y=\"610\" as=\"geometry\"/></mxCell><mxCell id=\"36\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;15&lt;/b&gt; · Aba &quot;Geral&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"37\" parent=\"35\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"Em Atividades – Geral pode haver documentos e imagens anexados ao cadastro\" vertex=\"1\"><mxGeometry height=\"60\" width=\"220\" x=\"260\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"38\" edge=\"1\" parent=\"35\" source=\"36\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"37\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"39\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;16–17&lt;/b&gt; · Aba Contrato / Contato\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"140\" as=\"geometry\"/></mxCell><mxCell id=\"40\" parent=\"35\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"Os dados têm que bater com a CNH, RG e Comprovante de endereço.\" vertex=\"1\"><mxGeometry height=\"60\" width=\"220\" x=\"260\" y=\"124\" as=\"geometry\"/></mxCell><mxCell id=\"41\" edge=\"1\" parent=\"35\" source=\"39\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"40\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"42\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;18&lt;/b&gt; · &quot;Informações do veículo&quot; / Cotações\" vertex=\"1\"><mxGeometry height=\"56\" width=\"220\" x=\"20\" y=\"208\" as=\"geometry\"/></mxCell><mxCell id=\"43\" parent=\"35\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"Os dados têm que bater com a CNH e com as informações do veículo.&lt;br&gt;&lt;br&gt;&lt;div&gt;é Necessário validar se a FIPE bate com o modelo informado no documento.&lt;/div&gt;\" vertex=\"1\"><mxGeometry height=\"80\" width=\"220\" x=\"260\" y=\"190\" as=\"geometry\"/></mxCell><mxCell id=\"44\" edge=\"1\" parent=\"35\" source=\"42\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"43\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"45\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;19&lt;/b&gt; · &quot;Planos&quot;\" vertex=\"1\"><mxGeometry height=\"84\" width=\"220\" x=\"20\" y=\"284\" as=\"geometry\"/></mxCell><mxCell id=\"46\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F3E8FF;strokeColor=#7F77DD;fontColor=#3C3489;fontSize=11;align=left;spacingLeft=6;\" value=\"Definir o que conferir em vencimento, planos e agregado\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"260\" y=\"440\" as=\"geometry\"/></mxCell><mxCell id=\"47\" parent=\"35\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3DE;strokeColor=#3B6D11;fontColor=#27500A;fontSize=11;align=left;spacingLeft=6;\" value=\"OCR da CNH/RG comparando sozinho com os campos do card\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"260\" y=\"490\" as=\"geometry\"/></mxCell><mxCell id=\"48\" edge=\"1\" parent=\"35\" source=\"45\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;startArrow=diamondThin;startFill=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;\" target=\"46\" value=\"\"><mxGeometry relative=\"1\" x=\"-0.1735\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"130\" y=\"460\"/></Array><mxPoint x=\"120\" y=\"327.55999999999995\" as=\"sourcePoint\"/></mxGeometry></mxCell><mxCell id=\"49\" edge=\"1\" parent=\"35\" source=\"39\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;\" target=\"47\" value=\"\"><mxGeometry relative=\"1\" x=\"0.0102\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"20\" y=\"510\"/></Array><mxPoint x=\"40\" y=\"330\" as=\"sourcePoint\"/></mxGeometry></mxCell><mxCell id=\"50\" edge=\"1\" parent=\"35\" source=\"36\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"39\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"51\" edge=\"1\" parent=\"35\" source=\"39\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"42\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"52\" edge=\"1\" parent=\"35\" source=\"42\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;entryX=0.5;entryY=0;entryDx=0;entryDy=0;\" target=\"45\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"><mxPoint x=\"130\" y=\"292\" as=\"targetPoint\"/></mxGeometry></mxCell><mxCell id=\"53\" edge=\"1\" parent=\"35\" source=\"54\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;defaultLabelBackgroundColor=page;\" target=\"56\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"54\" parent=\"35\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"É Necessário validar o valor da mensalidade conforme a tabela de planos.&lt;br&gt;1 - Validar se o intervalo está batendo com a mensalidade&lt;div&gt;2 - Conferir se as regras de FORA, DENTRO, DIESEL, E UBER, Estão sendo aplicadas corretamente.&lt;/div&gt;\" vertex=\"1\"><mxGeometry height=\"122\" width=\"220\" x=\"260\" y=\"276\" as=\"geometry\"/></mxCell><mxCell id=\"55\" edge=\"1\" parent=\"35\" source=\"45\" style=\"endArrow=none;dashed=1;html=1;rounded=0;defaultLabelBackgroundColor=page;exitX=1;exitY=0.5;exitDx=0;exitDy=0;\" value=\"\"><mxGeometry height=\"50\" relative=\"1\" width=\"50\" as=\"geometry\"><mxPoint x=\"240\" y=\"336\" as=\"sourcePoint\"/><mxPoint x=\"260\" y=\"326\" as=\"targetPoint\"/></mxGeometry></mxCell><mxCell id=\"56\" parent=\"35\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=left;spacingLeft=6;\" value=\"3 - A Ordem é.&lt;div&gt;- Buscar MODELO no documento.&lt;/div&gt;&lt;div&gt;- Comparar com a tabela de aceitação.&lt;/div&gt;&lt;div&gt;- Colher a TABELA E COTA.&lt;/div&gt;&lt;div&gt;- Validar / Atualizar a cotação.&lt;/div&gt;\" vertex=\"1\"><mxGeometry height=\"122\" width=\"220\" x=\"498\" y=\"276\" as=\"geometry\"/></mxCell><mxCell id=\"57\" parent=\"1\" style=\"swimlane;startSize=36;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#0C447C;fontStyle=1;fontSize=14;rounded=1;arcSize=4;html=1;whiteSpace=wrap;\" value=\"4. Vistoria\" vertex=\"1\"><mxGeometry height=\"188\" width=\"500\" x=\"2120\" y=\"608\" as=\"geometry\"/></mxCell><mxCell id=\"58\" parent=\"57\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=left;spacingLeft=8;\" value=\"&lt;b&gt;21&lt;/b&gt;&amp;nbsp;· Clicar em &quot;Visualizar fotos&quot;\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"59\" parent=\"57\" style=\"rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F3E8FF;strokeColor=#7F77DD;fontColor=#3C3489;fontSize=11;align=left;spacingLeft=6;\" value=\"Definir critério de aceite das fotos\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"260\" y=\"56\" as=\"geometry\"/></mxCell><mxCell id=\"60\" parent=\"57\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3DE;strokeColor=#3B6D11;fontColor=#27500A;fontSize=11;align=left;spacingLeft=6;\" value=\"Checklist de fotos obrigatórias: faltou foto → pendência\" vertex=\"1\"><mxGeometry height=\"44\" width=\"220\" x=\"20\" y=\"132\" as=\"geometry\"/></mxCell><mxCell id=\"61\" edge=\"1\" parent=\"57\" source=\"58\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"59\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"62\" edge=\"1\" parent=\"57\" source=\"58\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"60\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"63\" edge=\"1\" parent=\"1\" source=\"45\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;exitX=0.5;exitY=1;exitDx=0;exitDy=0;\" target=\"58\" value=\"\"><mxGeometry relative=\"1\" x=\"0.21\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"1480\" y=\"1020\"/><mxPoint x=\"1840\" y=\"1020\"/><mxPoint x=\"1840\" y=\"686\"/></Array><mxPoint x=\"1530\" y=\"1008\" as=\"sourcePoint\"/></mxGeometry></mxCell><mxCell id=\"64\" parent=\"1\" style=\"swimlane;startSize=36;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#0C447C;fontStyle=1;fontSize=14;rounded=1;arcSize=4;html=1;whiteSpace=wrap;\" value=\"5. Decisão\" vertex=\"1\"><mxGeometry height=\"420\" width=\"500\" x=\"2650\" y=\"600\" as=\"geometry\"/></mxCell><mxCell id=\"65\" parent=\"64\" style=\"rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;fontStyle=1;\" value=\"Cadastro ok?\" vertex=\"1\"><mxGeometry height=\"100\" width=\"200\" x=\"150\" y=\"60\" as=\"geometry\"/></mxCell><mxCell id=\"66\" parent=\"64\" style=\"rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F3E8FF;strokeColor=#7F77DD;fontColor=#3C3489;fontSize=12;align=left;spacingLeft=6;align=center;\" value=\"&lt;b&gt;Aprovar&lt;/b&gt;&lt;br&gt;(caminho não gravado no fluxo)\" vertex=\"1\"><mxGeometry height=\"56\" width=\"200\" x=\"20\" y=\"220\" as=\"geometry\"/></mxCell><mxCell id=\"67\" parent=\"64\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FCEBEB;strokeColor=#A32D2D;fontColor=#791F1F;fontSize=12;\" value=\"&lt;b&gt;22&lt;/b&gt;&amp;nbsp;· Reprovar\" vertex=\"1\"><mxGeometry height=\"56\" width=\"200\" x=\"280\" y=\"220\" as=\"geometry\"/></mxCell><mxCell id=\"68\" parent=\"64\" style=\"rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F3E8FF;strokeColor=#7F77DD;fontColor=#3C3489;fontSize=11;align=left;spacingLeft=6;\" value=\"Padronizar motivos de reprovação\" vertex=\"1\"><mxGeometry height=\"44\" width=\"200\" x=\"280\" y=\"310\" as=\"geometry\"/></mxCell><mxCell id=\"69\" edge=\"1\" parent=\"64\" source=\"65\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"66\" value=\"Sim\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"70\" edge=\"1\" parent=\"64\" source=\"65\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"67\" value=\"Não / divergência\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"71\" edge=\"1\" parent=\"64\" source=\"67\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#888780;\" target=\"68\" value=\"\"><mxGeometry relative=\"1\" as=\"geometry\"/></mxCell><mxCell id=\"72\" edge=\"1\" parent=\"1\" source=\"58\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;\" target=\"65\" value=\"\"><mxGeometry relative=\"1\" x=\"0.0343\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"2250\" y=\"650\"/><mxPoint x=\"2610\" y=\"650\"/><mxPoint x=\"2610\" y=\"716\"/></Array></mxGeometry></mxCell><mxCell id=\"73\" parent=\"1\" style=\"shape=note;size=12;whiteSpace=wrap;html=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#633806;fontSize=11;align=center;spacingLeft=6;\" value=\"Regra definida\" vertex=\"1\"><mxGeometry height=\"36\" width=\"200\" x=\"240\" y=\"536\" as=\"geometry\"/></mxCell><mxCell id=\"74\" parent=\"1\" style=\"rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F3E8FF;strokeColor=#7F77DD;fontColor=#3C3489;fontSize=11;align=center;spacingLeft=6;\" value=\"Regra a definir\" vertex=\"1\"><mxGeometry height=\"36\" width=\"200\" x=\"460\" y=\"536\" as=\"geometry\"/></mxCell><mxCell id=\"75\" parent=\"1\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3DE;strokeColor=#3B6D11;fontColor=#27500A;fontSize=11;align=center;spacingLeft=6;\" value=\"Ponto de automação\" vertex=\"1\"><mxGeometry height=\"36\" width=\"200\" x=\"680\" y=\"536\" as=\"geometry\"/></mxCell><mxCell id=\"76\" parent=\"1\" style=\"rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5F5E5A;fontSize=12;align=center;spacingLeft=8;\" value=\"Passo do fluxo\" vertex=\"1\"><mxGeometry height=\"36\" width=\"200\" x=\"900\" y=\"536\" as=\"geometry\"/></mxCell><mxCell id=\"77\" edge=\"1\" parent=\"1\" source=\"23\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#444441;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;\" target=\"36\" value=\"\"><mxGeometry relative=\"1\" x=\"-0.0773\" as=\"geometry\"><Array as=\"points\"><mxPoint x=\"1060\" y=\"1000\"/><mxPoint x=\"1190\" y=\"1000\"/><mxPoint x=\"1190\" y=\"684\"/></Array><mxPoint x=\"1040\" y=\"1234\" as=\"sourcePoint\"/><mxPoint x=\"1400\" y=\"678\" as=\"targetPoint\"/></mxGeometry></mxCell></root></mxGraphModel>",
+  "pages": [
+    {
+      "id": "YcjzAQ4fSZ38OI0cVx3q",
+      "name": "Fluxo de Cadastro – PowerCRM",
+      "cells": [
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-2",
+          "type": "node",
+          "parent": "1",
+          "label": "1. Acesso ao PowerCRM"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-3",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "1 · Preencher \"Seu e-mail\"",
+          "html": "<b>1</b> · Preencher \"Seu e-mail\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-4",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "2 · Preencher \"Sua senha\"",
+          "html": "<b>2</b> · Preencher \"Sua senha\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-5",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "3 · Clicar em \"Acessar\"",
+          "html": "<b>3</b> · Clicar em \"Acessar\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-6",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "4 · Selecionar a empresa",
+          "html": "<b>4</b> · Selecionar a empresa"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-7",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "5 · Abrir o Dashboard",
+          "html": "<b>5</b> · Abrir o Dashboard"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-8",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "label": "Login automático com credencial guardada fora do código"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-9",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "source": "k2sSmpzV7HjeKQp3cLGe-7",
+          "target": "k2sSmpzV7HjeKQp3cLGe-8"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-10",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "source": "k2sSmpzV7HjeKQp3cLGe-3",
+          "target": "k2sSmpzV7HjeKQp3cLGe-4"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-11",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "source": "k2sSmpzV7HjeKQp3cLGe-4",
+          "target": "k2sSmpzV7HjeKQp3cLGe-5"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-12",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "source": "k2sSmpzV7HjeKQp3cLGe-5",
+          "target": "k2sSmpzV7HjeKQp3cLGe-6"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-13",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-2",
+          "source": "k2sSmpzV7HjeKQp3cLGe-6",
+          "target": "k2sSmpzV7HjeKQp3cLGe-7"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-14",
+          "type": "node",
+          "parent": "1",
+          "label": "2. Localizar cards no Pipeline"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-15",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "6 · Clicar em \"Pipeline\"",
+          "html": "<b>6</b> · Clicar em \"Pipeline\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-16",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "7 · Clicar em \"Filtrar\"",
+          "html": "<b>7</b> · Clicar em \"Filtrar\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-17",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "8 · Abrir \"Selecione\" (etapas)",
+          "html": "<b>8</b> · Abrir \"Selecione\" (etapas)"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-18",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "9 · Marcar \"ANALISAR – CADASTRO COM PENDÊNCIAS LEVES\"",
+          "html": "<b>9</b> · Marcar \"ANALISAR – CADASTRO COM PENDÊNCIAS LEVES\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-19",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "10 · Marcar \"ANALISAR – CADASTRO COMPLETO\"",
+          "html": "<b>10</b> · Marcar \"ANALISAR – CADASTRO COMPLETO\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-20",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "11 · Abrir \"Filtrar por atividades\"",
+          "html": "<b>11</b> · Abrir \"Filtrar por atividades\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-21",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "12 · Marcar \"Em aprovação\"",
+          "html": "<b>12</b> · Marcar \"Em aprovação\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-22",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "13 · Marcar \"Retornadas\"",
+          "html": "<b>13</b> · Marcar \"Retornadas\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-23",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "14 · Abrir um card.",
+          "html": "<b>14</b> · Abrir um card."
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-24",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "label": "\"Filtrar apenas os cards que ainda não foram iniciados pelas analistas de cadastro.\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-26",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-23",
+          "target": "k2sSmpzV7HjeKQp3cLGe-24"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-28",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-15",
+          "target": "k2sSmpzV7HjeKQp3cLGe-16"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-29",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-16",
+          "target": "k2sSmpzV7HjeKQp3cLGe-17"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-30",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-17",
+          "target": "k2sSmpzV7HjeKQp3cLGe-18"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-31",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-18",
+          "target": "k2sSmpzV7HjeKQp3cLGe-19"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-32",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-19",
+          "target": "k2sSmpzV7HjeKQp3cLGe-20"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-33",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-20",
+          "target": "k2sSmpzV7HjeKQp3cLGe-21"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-34",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-21",
+          "target": "k2sSmpzV7HjeKQp3cLGe-22"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-35",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-14",
+          "source": "k2sSmpzV7HjeKQp3cLGe-22",
+          "target": "k2sSmpzV7HjeKQp3cLGe-23"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-36",
+          "type": "edge",
+          "parent": "1"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-37",
+          "type": "node",
+          "parent": "1",
+          "label": "3. Conferência do card"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-38",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "15 · Aba \"Geral\"",
+          "html": "<b>15</b> · Aba \"Geral\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-39",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "Em Atividades – Geral pode haver documentos e imagens anexados ao cadastro"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-40",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-38",
+          "target": "k2sSmpzV7HjeKQp3cLGe-39"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-41",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "16–17 · Aba Contrato / Contato",
+          "html": "<b>16–17</b> · Aba Contrato / Contato"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-42",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "Os dados têm que bater com a CNH, RG e Comprovante de endereço."
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-43",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-41",
+          "target": "k2sSmpzV7HjeKQp3cLGe-42"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-44",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "18 · \"Informações do veículo\" / Cotações",
+          "html": "<b>18</b> · \"Informações do veículo\" / Cotações"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-45",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "Os dados têm que bater com a CNH e com as informações do veículo.\n\né Necessário validar se a FIPE bate com o modelo informado no documento.",
+          "html": "Os dados têm que bater com a CNH e com as informações do veículo.<br><br><div>é Necessário validar se a FIPE bate com o modelo informado no documento.</div>"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-46",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-44",
+          "target": "k2sSmpzV7HjeKQp3cLGe-45"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-48",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "19 · \"Planos\"",
+          "html": "<b>19</b> · \"Planos\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-50",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "Definir o que conferir em vencimento, planos e agregado"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-51",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "OCR da CNH/RG comparando sozinho com os campos do card"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-52",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-48",
+          "target": "k2sSmpzV7HjeKQp3cLGe-50"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-53",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-41",
+          "target": "k2sSmpzV7HjeKQp3cLGe-51"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-54",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-38",
+          "target": "k2sSmpzV7HjeKQp3cLGe-41"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-55",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-41",
+          "target": "k2sSmpzV7HjeKQp3cLGe-44"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-56",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-44",
+          "target": "k2sSmpzV7HjeKQp3cLGe-48"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-108",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-100",
+          "target": "k2sSmpzV7HjeKQp3cLGe-107"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-100",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "É Necessário validar o valor da mensalidade conforme a tabela de planos.\n1 - Validar se o intervalo está batendo com a mensalidade\n2 - Conferir se as regras de FORA, DENTRO, DIESEL, E UBER, Estão sendo aplicadas corretamente.",
+          "html": "É Necessário validar o valor da mensalidade conforme a tabela de planos.<br>1 - Validar se o intervalo está batendo com a mensalidade<div>2 - Conferir se as regras de FORA, DENTRO, DIESEL, E UBER, Estão sendo aplicadas corretamente.</div>"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-101",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "source": "k2sSmpzV7HjeKQp3cLGe-48"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-107",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-37",
+          "label": "3 - A Ordem é.\n- Buscar MODELO no documento.\n- Comparar com a tabela de aceitação.\n- Colher a TABELA E COTA.\n- Validar / Atualizar a cotação.",
+          "html": "3 - A Ordem é.<div>- Buscar MODELO no documento.</div><div>- Comparar com a tabela de aceitação.</div><div>- Colher a TABELA E COTA.</div><div>- Validar / Atualizar a cotação.</div>"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-60",
+          "type": "node",
+          "parent": "1",
+          "label": "4. Vistoria"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-61",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-60",
+          "label": "21 · Clicar em \"Visualizar fotos\"",
+          "html": "<b>21</b>&nbsp;· Clicar em \"Visualizar fotos\""
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-62",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-60",
+          "label": "Definir critério de aceite das fotos"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-63",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-60",
+          "label": "Checklist de fotos obrigatórias: faltou foto → pendência"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-64",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-60",
+          "source": "k2sSmpzV7HjeKQp3cLGe-61",
+          "target": "k2sSmpzV7HjeKQp3cLGe-62"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-65",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-60",
+          "source": "k2sSmpzV7HjeKQp3cLGe-61",
+          "target": "k2sSmpzV7HjeKQp3cLGe-63"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-66",
+          "type": "edge",
+          "parent": "1",
+          "source": "k2sSmpzV7HjeKQp3cLGe-48",
+          "target": "k2sSmpzV7HjeKQp3cLGe-61"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-67",
+          "type": "node",
+          "parent": "1",
+          "label": "5. Decisão"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-68",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "label": "Cadastro ok?"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-69",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "label": "Aprovar\n(caminho não gravado no fluxo)",
+          "html": "<b>Aprovar</b><br>(caminho não gravado no fluxo)"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-70",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "label": "22 · Reprovar",
+          "html": "<b>22</b>&nbsp;· Reprovar"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-71",
+          "type": "node",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "label": "Padronizar motivos de reprovação"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-72",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "source": "k2sSmpzV7HjeKQp3cLGe-68",
+          "target": "k2sSmpzV7HjeKQp3cLGe-69",
+          "label": "Sim"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-73",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "source": "k2sSmpzV7HjeKQp3cLGe-68",
+          "target": "k2sSmpzV7HjeKQp3cLGe-70",
+          "label": "Não / divergência"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-74",
+          "type": "edge",
+          "parent": "k2sSmpzV7HjeKQp3cLGe-67",
+          "source": "k2sSmpzV7HjeKQp3cLGe-70",
+          "target": "k2sSmpzV7HjeKQp3cLGe-71"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-75",
+          "type": "edge",
+          "parent": "1",
+          "source": "k2sSmpzV7HjeKQp3cLGe-61",
+          "target": "k2sSmpzV7HjeKQp3cLGe-68"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-76",
+          "type": "node",
+          "parent": "1",
+          "label": "Regra definida"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-77",
+          "type": "node",
+          "parent": "1",
+          "label": "Regra a definir"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-78",
+          "type": "node",
+          "parent": "1",
+          "label": "Ponto de automação"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-79",
+          "type": "node",
+          "parent": "1",
+          "label": "Passo do fluxo"
+        },
+        {
+          "id": "k2sSmpzV7HjeKQp3cLGe-59",
+          "type": "edge",
+          "parent": "1",
+          "source": "k2sSmpzV7HjeKQp3cLGe-23",
+          "target": "k2sSmpzV7HjeKQp3cLGe-38"
+        }
+      ]
+    }
+  ]
+}

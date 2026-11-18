@@ -1,0 +1,8 @@
+playwright==1.63.0
+rapidocr_onnxruntime
+opencv-python-headless
+openpyxl
+rapidfuzz
+anthropic
+google-genai
+pypdfium2

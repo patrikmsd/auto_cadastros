@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Assistente de conferência · PowerCRM",
+  "version": "0.10.0",
+  "description": "Mostra dentro do card do PowerCRM o que o robô encontrou nos documentos e fotos. Não salva nada: quem salva é o analista.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "opcoes.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.powercrm.com.br/*",
+        "https://beta.powercrm.com.br/*"
+      ],
+      "js": [
+        "conteudo.js"
+      ],
+      "css": [
+        "conteudo.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icone.png"
+  },
+  "action": {
+    "default_popup": "opcoes.html",
+    "default_title": "Conexão com o assistente",
+    "default_icon": {
+      "128": "icone.png"
+    }
+  }
+}

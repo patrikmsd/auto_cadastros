@@ -1,0 +1,173 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.7.17">
+  <diagram id="fluxo-demo" name="Fluxo do demo.py">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1260" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- título -->
+        <mxCell id="titulo" value="&lt;b style=&quot;font-size:20px&quot;&gt;Robô de Cadastro · o que acontece quando rodo o demo.py&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:12px;color:#555&quot;&gt;py demo.py [opções] · produção só leitura · o único card que pode ser gravado é o de teste 62qVR7BlEy&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="180" y="10" width="900" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== fluxo principal ===== -->
+        <mxCell id="n0" value="&lt;b&gt;py demo.py&lt;/b&gt; [opções]&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;sem --codigo: card de teste 62qVR7BlEy&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="380" y="80" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n1" value="&lt;b&gt;1. Abre o PowerCRM&lt;/b&gt;&lt;br&gt;sessão salva · liga a trava SÓ LEITURA&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;sessão expirada → espera o login na janela&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="370" y="170" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n2" value="&lt;b&gt;2. Acha o card&lt;/b&gt;&lt;br&gt;digita o código (ou placa) no Buscar do funil" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="370" y="270" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" value="Card tem tag&lt;br&gt;de analista?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="420" y="360" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="pare" value="&lt;b&gt;Para&lt;/b&gt;&lt;br&gt;não abre o card" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="660" y="375" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n3" value="&lt;b&gt;3. Lê o card e baixa as fotos&lt;/b&gt;&lt;br&gt;abas Contato, Cotações, Vistoria + anexos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="370" y="480" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n4" value="&lt;b&gt;4. OCR local dos documentos&lt;/b&gt;&lt;br&gt;CRLV, CNH, comprovante, chassi&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;nada sai do computador · grátis&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="370" y="570" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n4b" value="&lt;b&gt;4b. IA olha as fotos do veículo&lt;/b&gt;&lt;br&gt;modelo, placa, painel/km, vidros, avarias, foto errada ou escura" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="370" y="670" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n4c" value="&lt;b&gt;4c. FIPE oficial (obrigatória)&lt;/b&gt;&lt;br&gt;tabela do mês da cotação · pelo código ou pelo modelo mais próximo · IA decide a versão" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="370" y="770" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="n5" value="&lt;b&gt;5. IA decide a tabela do CRM&lt;/b&gt;&lt;br&gt;regras + tabela de aceitação (só dados do veículo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="370" y="870" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n5b" value="&lt;b&gt;5b. IA compara documentos × card&lt;/b&gt;&lt;br&gt;texto do OCR, sem nome e CPF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="370" y="960" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n6" value="&lt;b&gt;6. Conferência por código&lt;/b&gt;&lt;br&gt;cota, valor × FIPE, mensalidade, vencimento, fotos obrigatórias…" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1050" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n7" value="&lt;b&gt;7. Veredito&lt;/b&gt;&lt;br&gt;✅ OK · ⚠️ VERIFICAR · ❌ DIVERGENTE&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;nada foi alterado no CRM&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1140" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" value="--preencher?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="1240" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="n8" value="&lt;b&gt;8. Preenche o card&lt;/b&gt;&lt;br&gt;campos vazios com CRLV, CNH e comprovante&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;só no card de teste 62qVR7BlEy&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1370" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" value="--gravar?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="1470" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ensaio" value="&lt;b&gt;Ensaio&lt;/b&gt;&lt;br&gt;digita e clica Salvar,&lt;br&gt;a trava bloqueia: nada grava" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="170" y="1485" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="grava" value="&lt;b&gt;Grava de verdade&lt;/b&gt;&lt;br&gt;só no card de teste&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;aviso &quot;Salvar informações&quot; → Salvar&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="630" y="1485" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="fim" value="&lt;b&gt;Fim&lt;/b&gt;&lt;br&gt;mostra o que ficou sem certeza e o custo de IA&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;o painel fica aberto até apertar Enter&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="370" y="1600" width="260" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- setas do fluxo -->
+        <mxCell id="e01" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n0" target="n1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n1" target="n2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2d" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n2" target="d1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed1s" value="sim" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="d1" target="pare"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed1n" value="não" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="d1" target="n3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e34" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n3" target="n4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e44b" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n4" target="n4b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4b4c" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n4b" target="n4c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4c5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n4c" target="n5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e55b" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n5" target="n5b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5b6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n5b" target="n6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e67" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n6" target="n7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7d2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n7" target="d2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed2s" value="sim" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="d2" target="n8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed2n" value="não (padrão)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="d2" target="fim">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="870" y="1285" /><mxPoint x="870" y="1640" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e8d3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="n8" target="d3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed3n" value="não" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="d3" target="ensaio"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ed3s" value="sim" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;fontStyle=1;" edge="1" parent="1" source="d3" target="grava"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eensfim" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="ensaio" target="fim"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="egravafim" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;exitX=0.5;exitY=1;entryX=0.85;entryY=0.2;" edge="1" parent="1" source="grava" target="fim"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ===== opções (à direita) ===== -->
+        <mxCell id="t_opc" value="&lt;b&gt;Opções (variações)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="900" y="130" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="f_login" value="&lt;b&gt;--login-automatico&lt;/b&gt;&lt;br&gt;sessão expirada: entra com o login do .env" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="170" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="f_painel" value="&lt;b&gt;--sem-painel&lt;/b&gt;&lt;br&gt;não abre o painel no navegador" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="230" width="300" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="f_codigo" value="&lt;b&gt;--codigo REQayR67EB&lt;/b&gt;&lt;br&gt;outro card (código ou placa)" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="285" width="300" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="f_ocr" value="&lt;b&gt;--sem-ocr&lt;/b&gt;&lt;br&gt;pula o OCR (mais rápido, sem conferir documentos)" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="580" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="f_fotos" value="&lt;b&gt;--sem-fotos-ia&lt;/b&gt; pula esta etapa&lt;br&gt;&lt;b&gt;--todas-imagens&lt;/b&gt; inclui CNH e comprovante&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;só roda com --ia gpt&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="665" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="f_fipe" value="&lt;b&gt;sem opção: sempre roda&lt;/b&gt;&lt;br&gt;sem código FIPE no card → busca pelo modelo&lt;br&gt;site fora do ar → fica &quot;conferir manualmente&quot;" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#f5f5f5;strokeColor=#999999;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="770" width="300" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="f_ia" value="&lt;b&gt;--ia gpt | gemini&lt;/b&gt; (padrão: gpt)&lt;br&gt;&lt;b&gt;--modelo gpt-5.6-luna&lt;/b&gt; troca o modelo só nesta vez" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="880" width="300" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="f_prem" value="&lt;b&gt;--preencher&lt;/b&gt; ensaio do preenchimento&lt;br&gt;&lt;b&gt;--gravar&lt;/b&gt; grava de verdade (só junto com --preencher)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;os dois só são aceitos no card de teste 62qVR7BlEy&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1360" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="lf_login" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_login" target="n1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_codigo" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_codigo" target="n2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_ocr" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_ocr" target="n4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_fotos" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_fotos" target="n4b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_fipe" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="f_fipe" target="n4c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_ia" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_ia" target="n5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lf_prem" style="html=1;dashed=1;endArrow=none;strokeColor=#d6b656;" edge="1" parent="1" source="f_prem" target="n8"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ===== o que fica salvo (à esquerda) ===== -->
+        <mxCell id="t_sai" value="&lt;b&gt;O que aparece / fica salvo&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="o_painel" value="&lt;b&gt;Painel ao vivo&lt;/b&gt;&lt;br&gt;127.0.0.1:8765 (só no seu computador)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;rever depois: py -m robo.painel &amp;lt;pasta&amp;gt;&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="260" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="o_fotos" value="Fotos e anexos do card&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;testes/amostras/&amp;lt;placa&amp;gt;&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o_vist" value="Análise de cada foto&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;analise_fotos.json&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="675" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o_fipe" value="Consulta FIPE com autenticação&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;fipe.json&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="775" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o_rel" value="&lt;b&gt;Relatório do card&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;robo/saida/&amp;lt;data&amp;gt;/relatorio.md e .json&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1145" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="o_inc" value="Sem certeza + custo de IA&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;saida/incertezas.csv · saida/custos_ia.csv&lt;br&gt;(acumulam todas as execuções)&lt;/span&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1600" width="260" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="lo_painel" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="o_painel" target="n1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lo_fotos" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="o_fotos" target="n3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lo_vist" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="o_vist" target="n4b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lo_fipe" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="o_fipe" target="n4c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lo_rel" style="html=1;dashed=1;endArrow=none;strokeColor=#999999;" edge="1" parent="1" source="o_rel" target="n7"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ===== legenda e lote ===== -->
+        <mxCell id="legenda" value="&lt;b&gt;Legenda&lt;/b&gt;&lt;br&gt;🟦 navegador / PowerCRM (só leitura)&lt;br&gt;🟩 roda no computador, grátis&lt;br&gt;🟪 IA gpt-6-luna (custa ~R$ 0,06–0,15 por card)&lt;br&gt;🟧 grava no CRM (só card de teste)&lt;br&gt;🟥 parada de segurança&lt;br&gt;🟨 opção na linha de comando" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1710" width="330" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="lote" value="&lt;b&gt;Vários cards de uma vez: py -m robo.lote&lt;/b&gt;&lt;br&gt;lista o funil com o filtro das analistas, pula card com analista&lt;br&gt;e faz as etapas 3 a 7 em cada um · &lt;b&gt;nunca preenche&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;--so-listar · --max 5 · --codigo · --sem-fotos-ia · --retomar &amp;lt;pasta&amp;gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1720" width="460" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="trava" value="&lt;b&gt;🔒 Trava&lt;/b&gt;&lt;br&gt;Qualquer gravação no CRM é cancelada,&lt;br&gt;exceto Salvar com --gravar no card de teste." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1720" width="300" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

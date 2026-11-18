@@ -1,0 +1,34 @@
+/* selos, valor fantasma e moldura nos campos do card (o painel lateral fica num shadow DOM e não depende deste arquivo) */
+.asx-selo{display:inline-flex !important;align-items:center;gap:6px;margin:3px 0 0 !important;padding:1px 9px !important;border-radius:999px !important;
+  font:600 11px/18px system-ui,"Segoe UI",sans-serif !important;cursor:pointer;user-select:none;border:1px solid transparent !important;
+  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.asx-selo::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.asx-selo.asx-ok{background:#e5f6ec !important;color:#14804a !important}
+.asx-selo.asx-sugerido{background:#fff3dc !important;color:#8a4f00 !important;border-color:#f0c36d !important}
+.asx-selo.asx-conferir{background:#fde8e8 !important;color:#c0262d !important;border-color:#f5b5b8 !important}
+.asx-selo.asx-diverge{background:#fde8e8 !important;color:#c0262d !important}
+.asx-selo.asx-preenchido{background:#f1eafe !important;color:#7c3aed !important}
+
+/* valor sugerido dentro do campo vazio: só desenho por cima, não é o valor real e não vai no Salvar */
+.asx-fantasma{position:absolute !important;z-index:2;box-sizing:border-box !important;display:flex !important;align-items:center;gap:8px;padding:0 9px;
+  pointer-events:none;font:600 13px system-ui,"Segoe UI",sans-serif;color:#9a4d00;background:linear-gradient(90deg,#fff4dc,#fffaf0) !important;
+  border-radius:3px;overflow:hidden;white-space:nowrap;animation:asx-respira 2.4s ease-in-out infinite}
+.asx-fantasma::before{content:"IA";flex-shrink:0;padding:0 5px;border-radius:4px;background:#f59e0b;color:#fff;font:700 9.5px/15px system-ui,sans-serif;letter-spacing:.04em}
+.asx-fantasma::after{content:"sugestão";margin-left:auto;font:600 9.5px system-ui,sans-serif;color:#c27c0e;text-transform:uppercase;letter-spacing:.05em}
+
+/* moldura em volta do campo: girando enquanto há sugestão; roxa fixa depois de preenchido; verde fixa onde já bate */
+@property --asx-ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+.asx-moldura{position:absolute !important;z-index:3;box-sizing:border-box !important;pointer-events:none;border-radius:6px;padding:2.5px;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.asx-moldura.asx-anima{background:conic-gradient(from var(--asx-ang),#f59e0b,#fde68a 25%,#7c3aed 50%,#fde68a 75%,#f59e0b);
+  animation:asx-gira 2.2s linear infinite;filter:drop-shadow(0 0 4px rgba(245,158,11,.7))}
+.asx-moldura.asx-feito{background:#7c3aed}
+.asx-moldura.asx-certo{background:#22a35a;padding:2px}
+
+.asx-campo-diverge{outline:2px solid #e5484d !important;outline-offset:1px}
+.asx-campo-conferir{outline:2px dashed #e5484d !important;outline-offset:1px}
+.asx-destaque{animation:asx-pisca 1s ease-in-out 2 !important}
+@keyframes asx-gira{to{--asx-ang:360deg}}
+@keyframes asx-respira{50%{color:#d97706}}
+@keyframes asx-pisca{50%{box-shadow:0 0 0 6px rgba(49,87,213,.35)}}
+@media (prefers-reduced-motion:reduce){.asx-fantasma,.asx-moldura,.asx-destaque{animation:none !important}}

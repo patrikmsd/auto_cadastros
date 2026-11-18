@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robô de Cadastro</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--card2:#f8f9fc;--txt:#18202e;--sub:#5d6878;--borda:#e2e6ee;--acento:#3b5bdb;--acentof:#e8edff;
+--ok:#16794a;--okf:#e2f5ea;--erro:#c0311f;--errof:#fde9e6;--alerta:#a15c00;--alertaf:#fff3d9;--neutro:#6b7280;--neutrof:#eef0f4;
+--log:#0f141c;--logtxt:#cdd5df;--sombra:0 1px 2px #0000000d,0 4px 14px #00000008}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d1117;--card:#161b23;--card2:#1b212b;--txt:#e7ebf1;--sub:#98a2b2;
+--borda:#29303b;--acento:#7d9bff;--acentof:#1a2442;--ok:#4cc38a;--okf:#11301f;--erro:#ff7b6e;--errof:#3a1714;--alerta:#f0b429;--alertaf:#33280c;
+--neutro:#9aa3b0;--neutrof:#222833;--sombra:none}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sub{color:var(--sub);font-size:12px}.mono{font-family:ui-monospace,Consolas,monospace}b{font-weight:600}
+
+/* topo */
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--borda)}
+.topo{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;padding:10px 20px;max-width:1500px;margin:auto}
+.marca{display:flex;align-items:center;gap:10px}.logo{width:34px;height:34px;border-radius:9px;background:var(--acento);color:#fff;display:grid;place-items:center;font-size:18px}
+.marca h1{font-size:15px;margin:0;line-height:1.2}.placa{display:inline-flex;flex-direction:column;align-items:center;border:2px solid var(--txt);border-radius:6px;overflow:hidden;font-weight:700;letter-spacing:.08em}
+.placa i{display:block;width:100%;background:#1f4fbf;color:#fff;font:600 7px/1.4 system-ui;text-align:center;letter-spacing:.1em;font-style:normal}
+.placa span{padding:0 8px;font:700 16px/1.3 ui-monospace,Consolas,monospace}
+.kpis{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}.kpi{display:flex;flex-direction:column;min-width:64px}.kpi b{font-size:16px;font-variant-numeric:tabular-nums}
+.barra{height:4px;background:var(--neutrof);overflow:hidden}.barra div{height:100%;background:var(--acento);transition:width .8s ease}
+.rodando .barra div{background-image:linear-gradient(45deg,#ffffff40 25%,transparent 25%,transparent 50%,#ffffff40 50%,#ffffff40 75%,transparent 75%);background-size:22px 22px;animation:listras 1s linear infinite}
+
+/* status */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.ok{background:var(--okf);color:var(--ok)}.erro{background:var(--errof);color:var(--erro)}.alerta{background:var(--alertaf);color:var(--alerta)}
+.info{background:var(--acentof);color:var(--acento)}.neutro{background:var(--neutrof);color:var(--neutro)}
+.ponto{width:8px;height:8px;border-radius:50%;background:currentColor}.vivo .ponto{animation:pulso 1.4s ease-in-out infinite}
+.giro{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gira .8s linear infinite;display:inline-block;flex:none}
+
+/* esteira de etapas */
+.esteira{display:flex;gap:6px;overflow-x:auto;padding:14px 20px 4px;max-width:1500px;margin:auto;scrollbar-width:thin}
+.passo{flex:1 0 118px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;position:relative;padding:0 4px}
+.passo:not(:last-child)::after{content:"";position:absolute;top:17px;left:calc(50% + 22px);right:calc(-50% + 22px);height:2px;background:var(--borda)}
+.passo.feito:not(:last-child)::after{background:var(--ok)}
+.bola{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--neutrof);color:var(--neutro);border:2px solid transparent;z-index:1}
+.passo.feito .bola{background:var(--ok);color:#fff;animation:estoura .35s ease}
+.passo.agora .bola{background:var(--acentof);color:var(--acento);border-color:var(--acento);animation:anel 1.6s ease-out infinite}
+.passo.falhou .bola{background:var(--erro);color:#fff}.passo.fora{opacity:.45}
+.passo .t{font-size:12px;font-weight:600;line-height:1.25}.passo .d{font-size:11px;color:var(--sub);font-variant-numeric:tabular-nums}
+
+/* corpo */
+main{max-width:1500px;margin:auto;padding:12px 20px 40px;display:grid;gap:16px;grid-template-columns:repeat(12,minmax(0,1fr))}
+section{grid-column:span 12;background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:16px 18px;box-shadow:var(--sombra);min-width:0}
+.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}
+@media (max-width:1100px){.c5,.c6,.c7{grid-column:span 12}}
+section>h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+section>h2 .ic{width:28px;height:28px;border-radius:8px;background:var(--acentof);color:var(--acento);display:grid;place-items:center;font-size:15px}
+section>h2 .est{margin-left:auto}
+.vazio{color:var(--sub);font-style:italic}
+.grupos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.grupo{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:10px 12px}
+.grupo h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--sub)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;margin:4px 0}.kv dt{color:var(--sub)}.kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 8px;border-bottom:1px solid var(--borda);text-align:left;vertical-align:top}
+th{font-size:11px;color:var(--sub);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.lista{margin:4px 0 0;padding-left:18px}.lista li{margin:2px 0}
+.desc{display:block;color:var(--sub);font-size:12px}
+.entra{animation:entra .45s ease both}
+
+/* veredito */
+.veredito{display:flex;gap:18px;align-items:center}
+.selo{width:84px;height:84px;border-radius:22px;display:grid;place-items:center;font-size:40px;flex:none}
+.veredito h3{margin:0;font-size:24px;line-height:1.2}.contagem{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.analisando .selo{background:var(--acentof);color:var(--acento)}.analisando .selo span{animation:pulso 1.4s ease-in-out infinite}
+.varredura{position:relative;overflow:hidden;border-radius:12px}.varredura::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#3b5bdb22,transparent);animation:varre 1.8s ease-in-out infinite}
+.itens{display:grid;gap:6px}.item{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:9px;background:var(--card2);border-left:4px solid var(--neutro)}
+.item.OK{border-left-color:var(--ok)}.item.ALERTA{border-left-color:var(--alerta)}.item.DIVERGENTE{border-left-color:var(--erro)}
+.item .ico{font-size:15px;line-height:1.4}.item b{display:block}
+
+/* FIPE */
+.fipe{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:18px}@media (max-width:900px){.fipe{grid-template-columns:1fr}}
+.linha-tempo{list-style:none;margin:0;padding:0;position:relative}
+.linha-tempo li{position:relative;padding:0 0 12px 30px}.linha-tempo li::before{content:"";position:absolute;left:9px;top:20px;bottom:0;width:2px;background:var(--borda)}
+.linha-tempo li:last-child::before{display:none}
+.linha-tempo .m{position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:var(--neutrof);color:var(--neutro)}
+.linha-tempo .ok .m{background:var(--ok);color:#fff}.linha-tempo .erro .m{background:var(--erro);color:#fff}.linha-tempo .rodando .m{background:var(--acentof);color:var(--acento)}
+.linha-tempo .rodando .txt{color:var(--acento);font-weight:600}
+.site{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:var(--card2);border:1px dashed var(--borda);margin-bottom:12px;font-size:12px}
+.site.vivo{border-color:var(--acento);color:var(--acento)}
+.compara{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}.compara .seta{display:grid;place-items:center;font-size:22px;color:var(--sub)}
+@media (max-width:700px){.compara{grid-template-columns:1fr}.compara .seta{transform:rotate(90deg)}}
+.ia-box{border:1px solid var(--acento);background:var(--acentof);border-radius:10px;padding:10px 12px;margin:12px 0}
+tr.vence td{background:var(--okf)}
+
+/* fotos */
+.progresso{height:8px;border-radius:99px;background:var(--neutrof);overflow:hidden;margin:6px 0 12px}.progresso div{height:100%;background:var(--acento);border-radius:99px;transition:width .6s ease}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.foto{position:relative;border-radius:10px;overflow:hidden;border:2px solid var(--borda);background:var(--card2);cursor:pointer;transition:transform .15s}
+.foto:hover{transform:translateY(-2px)}.foto img{width:100%;height:110px;object-fit:cover;display:block}
+.foto .rot{padding:6px 8px;font-size:12px;font-weight:600;line-height:1.25}.foto .tags{display:flex;flex-wrap:wrap;gap:3px;padding:0 8px 8px}
+.foto .tags .pill{font-size:10px;padding:1px 6px}
+.foto.problema{border-color:var(--erro)}.foto.atencao{border-color:var(--alerta)}.foto.boa{border-color:var(--ok)}
+.foto .fila{position:absolute;inset:0 0 auto;height:110px;display:grid;place-items:center;background:#0d111799;color:#fff;font-size:12px;font-weight:600}
+.foto .fila.scan::after{content:"";position:absolute;left:0;right:0;height:3px;background:#7d9bff;box-shadow:0 0 12px #7d9bff;animation:scan 1.6s ease-in-out infinite}
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.bloco{background:var(--card2);border:1px solid var(--borda);border-radius:10px;padding:9px 11px}.bloco>.sub{display:block;margin-bottom:3px}
+
+/* documentos */
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.doc{border:1px solid var(--borda);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:120px 1fr;background:var(--card2)}
+.doc img{width:120px;height:100%;min-height:120px;object-fit:cover;cursor:zoom-in}.doc .corpo{padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.doc h3{font-size:13px;margin:0}
+details summary{cursor:pointer;color:var(--sub);font-size:12px}pre{white-space:pre-wrap;margin:6px 0 0;font-size:12px;max-height:240px;overflow:auto}
+#log{background:var(--log);color:var(--logtxt);font:12px/1.45 ui-monospace,Consolas,monospace;height:320px;overflow:auto;border-radius:10px;padding:10px 12px;white-space:pre-wrap;margin-top:10px}
+
+/* modal */
+#modal{position:fixed;inset:0;background:#000b;display:none;z-index:50;padding:3vh 3vw;align-items:center;justify-content:center}
+#modal.aberto{display:flex;animation:entra .2s ease}
+#modal .caixa{background:var(--card);border-radius:14px;max-width:1200px;width:100%;max-height:94vh;overflow:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+@media (max-width:900px){#modal .caixa{grid-template-columns:1fr}}
+#modal .img{background:#000;display:grid;place-items:center;min-height:300px}#modal .img img{max-width:100%;max-height:90vh}
+#modal .detalhe{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+#modal .fechar{position:fixed;top:14px;right:18px;background:var(--card);color:var(--txt);border:0;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+
+.lote-tab td{vertical-align:middle}.lote-tab tr.atual td{background:var(--acentof)}.lote-tab tr.visto td{background:var(--okf)}
+.lote-tab tr.pulado td{opacity:.55}.btn{border:1px solid var(--borda);background:var(--card);color:var(--txt);border-radius:7px;padding:3px 10px;cursor:pointer;font:inherit;font-size:12px}
+.btn:hover{border-color:var(--acento);color:var(--acento)}.aviso{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:9px 14px;border-radius:10px;background:var(--acentof);color:var(--acento);font-weight:600}
+@keyframes gira{to{transform:rotate(360deg)}}
+@keyframes pulso{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes anel{0%{box-shadow:0 0 0 0 #3b5bdb66}100%{box-shadow:0 0 0 12px #3b5bdb00}}
+@keyframes estoura{0%{transform:scale(.6)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes entra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes listras{to{background-position:22px 0}}
+@keyframes varre{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes scan{0%{top:6%}50%{top:92%}100%{top:6%}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header id="topo">
+  <div class="topo">
+    <div class="marca"><div class="logo">🤖</div><div><h1>Robô de Cadastro</h1><span class="sub">MVP · conferência automática de cotação</span></div></div>
+    <div id="k-card" class="marca"></div>
+    <span id="k-status" class="pill info vivo"><span class="ponto"></span>conectando…</span>
+    <div class="kpis">
+      <div class="kpi"><span class="sub">Tempo</span><b id="k-tempo">—</b></div>
+      <div class="kpi"><span class="sub">Custo de IA</span><b id="k-custo">R$ 0</b></div>
+      <div class="kpi"><span class="sub">Sem certeza</span><b id="k-inc">0</b></div>
+      <div class="kpi"><span class="sub">Gravações</span><b id="k-grav">—</b></div>
+      <label class="kpi sub" title="rola a página até a etapa que está rodando"><span>Seguir</span><input type="checkbox" id="seguir" checked style="margin:3px 0 0"></label>
+    </div>
+  </div>
+  <div class="barra"><div id="barra" style="width:0"></div></div>
+</header>
+<div class="esteira" id="esteira"></div>
+<main>
+  <section id="s-lote" hidden><h2><span class="ic">🗂️</span>Lote · cards do filtro<span class="sub" id="lote-filtro"></span><span class="est" id="e-lote"></span></h2>
+    <div id="lote-prog"></div><div style="overflow-x:auto"><table class="lote-tab" id="lote"></table></div></section>
+  <div id="vendo" style="grid-column:span 12" hidden></div>
+  <section class="c5" id="s-veredito"><h2><span class="ic">⚖️</span>Veredito<span class="est" id="e-veredito"></span></h2><div id="veredito"></div><div id="destaques" style="margin-top:14px"></div></section>
+  <section class="c7" id="s-conf"><h2><span class="ic">✔️</span>Conferências<span class="est" id="e-conf"></span></h2><div id="conf"><p class="vazio">as conferências aparecem aqui ao final da análise</p></div></section>
+
+  <section id="s-card"><h2><span class="ic">🚗</span>Dados do card no CRM<span class="est" id="e-card"></span></h2><div id="card"><p class="vazio">lendo o card…</p></div></section>
+
+
+
+
+  <section id="s-docs"><h2><span class="ic">📄</span>Documentos · OCR local + análise da IA<span class="est" id="e-docs"></span></h2><div id="ia-docs"></div><div class="docs" id="docs"><p class="vazio">aguardando o OCR…</p></div></section>
+
+  <section id="s-vist"><h2><span class="ic">📸</span>Vistoria das fotos (IA)<span class="sub" id="vist-modelo"></span>
+    <label class="sub" style="margin-left:auto"><input type="checkbox" id="vist-filtro"> só fotos com problema</label><span id="e-vist"></span></h2>
+    <div id="vist-prog"></div><div id="vist-resumo"></div><div class="fotos" id="fotos"><p class="vazio">baixando as fotos da vistoria…</p></div></section>
+
+  <section id="s-fipe"><h2><span class="ic">🏷️</span>FIPE oficial · o modelo do card bate com o carro?<span class="sub" id="fipe-mes"></span><span class="est" id="e-fipe"></span></h2>
+    <div class="fipe"><div><div class="site" id="fipe-site">🌐 veiculos.fipe.org.br · aguardando</div><ul class="linha-tempo" id="fipe-passos"></ul></div><div id="fipe"><p class="vazio">a consulta começa depois do OCR e da análise das fotos</p></div></div></section>
+
+  <section class="c6" id="s-ia"><h2><span class="ic">📋</span>Tabela do CRM · decidida pela IA<span class="sub" id="ia-modelo"></span><span class="est" id="e-ia"></span></h2><div id="ia"><p class="vazio">aguardando…</p></div></section>
+  <section class="c6" id="s-inc"><h2><span class="ic">❔</span>Informações sem certeza<span class="sub">vão para revisão humana</span></h2><div id="inc"><p class="vazio">nenhuma até agora</p></div></section>
+
+  <section id="s-prop" hidden><h2><span class="ic">✍️</span>Preenchimento do card<span class="est" id="e-prop"></span></h2><div id="prop"></div><div class="fotos" id="telas" style="margin-top:10px"></div></section>
+
+  <section class="c6" id="s-custos"><h2><span class="ic">💲</span>Custo de IA desta execução</h2><div id="custos"><p class="vazio">nenhuma chamada ainda</p></div></section>
+  <section class="c6"><h2><span class="ic">⌨️</span>Terminal<label class="sub" style="margin-left:auto"><input type="checkbox" id="rolar" checked> rolar sozinho</label></h2>
+    <details id="d-log"><summary>mostrar o que o robô está escrevendo (<span id="nlog">0</span> linhas)</summary><div id="log"></div></details></section>
+</main>
+<div id="modal" onclick="if(event.target===this)fechar()"><button class="fechar" onclick="fechar()" aria-label="fechar">✕</button><div class="caixa" id="modal-caixa"></div></div>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const junta = (arr, sep=" · ") => arr.filter(Boolean).join(sep);
+const li = (arr, f=esc) => arr && arr.length ? `<ul class="lista">${arr.map(x=>`<li>${f(x)}</li>`).join("")}</ul>` : "";
+const pill = (cls, t) => `<span class="pill ${cls}">${t}</span>`;
+const brl = (n, casas=2) => "R$ " + Number(n).toLocaleString("pt-BR",{minimumFractionDigits:casas,maximumFractionDigits:casas});
+const ST = {OK:["ok","✅","OK"], ALERTA:["alerta","⚠️","Alerta"], DIVERGENTE:["erro","❌","Divergente"], NAO_VERIFICAVEL:["neutro","❔","Não verificável"]};
+const st = s => ST[s] || ["neutro","•",s];
+const EST = {bom:["ok","bom"], regular:["alerta","regular"], ruim:["erro","ruim"], nao_da_para_avaliar:["neutro","não dá p/ avaliar"]};
+const CERT = c => c==="alta"?"ok":c==="media"?"alerta":"erro";
+function dur(s){ s=Math.max(0,Math.round(s)); return s>=60?`${Math.floor(s/60)}min ${String(s%60).padStart(2,"0")}s`:`${s}s`; }
+// só troca o HTML se mudou: as animações não reiniciam a cada atualização
+const cacheHtml = {};
+function chaveado(id, itens){ // [[chave, html]]: troca só o item que mudou (a grade não pisca a cada foto nova)
+  const caixa = $(id), atuais = [...caixa.children];
+  if (atuais.length !== itens.length || atuais.some((el,i)=>el.dataset.k !== itens[i][0])) {
+    caixa.innerHTML = itens.map(([k,h])=>h.replace(/^<(\w+) /, `<$1 data-k="${esc(k)}" `)).join(""); [...caixa.children].forEach((el,i)=>el._h = itens[i][1]); cacheHtml[id] = null; return; }
+  itens.forEach(([k,h],i)=>{ if (atuais[i]._h !== h) { const novo = document.createRange().createContextualFragment(h.replace(/^<(\w+) /, `<$1 data-k="${esc(k)}" `)).firstElementChild; novo._h = h; atuais[i].replaceWith(novo); } });
+}
+function put(id, html){ if (cacheHtml[id] !== html) { cacheHtml[id] = html; $(id).innerHTML = html; } }
+function kv(obj){ const linhas = Object.entries(obj).filter(([,v])=>v!==""&&v!=null); return linhas.length ? `<dl class="kv">${linhas.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${v}</dd>`).join("")}</dl>` : ""; }
+function estado(id, e, ns){ // selo de cada seção: aguardando / rodando / concluído
+  const feito = (e.etapas||[]).filter(t=>ns.includes(t.n)), agora = feito.find(t=>!t.fim && e.status==="rodando");
+  put(id, agora ? pill("info vivo",`<span class="giro" style="width:11px;height:11px"></span>rodando`) : feito.length ? pill("ok","✓ concluído") : e.status==="rodando" ? pill("neutro","aguardando") : "");
+}
+
+let ultimo = null, versao = -1, nlog = 0, vendo = null, verPulados = false;
+const SITL = {OK:["ok","✅ OK"], VERIFICAR:["alerta","⚠️ verificar"], DIVERGENTE:["erro","❌ divergente"]};
+function lote(e){
+  const L = e.lote; $("s-lote").hidden = !L; if (!L) return;
+  const cards = L.cards||[], fila = cards.filter(c=>c.estado!=="pulado"), feitos = fila.filter(c=>["conferido","erro"].includes(c.estado));
+  const n = s => cards.filter(c=>c.situacao===s).length;
+  put("lote-filtro", esc(L.filtro||""));
+  put("e-lote", e.status==="rodando" && L.atual!=null ? pill("info vivo",`<span class="giro" style="width:11px;height:11px"></span>card ${feitos.length+1} de ${fila.length}`) : pill("ok",`✓ ${feitos.length} conferido(s)`));
+  put("lote-prog", `<div class="contagem" style="margin:0 0 6px">${pill("info",`${cards.length} no filtro`)}${pill("neutro",`⏭️ ${cards.length-fila.length} pulado(s)`)}${pill("ok",`✅ ${n("OK")}`)}${pill("alerta",`⚠️ ${n("VERIFICAR")}`)}${pill("erro",`❌ ${n("DIVERGENTE")}`)}</div>
+    <div class="progresso"><div style="width:${fila.length?100*feitos.length/fila.length:100}%"></div></div>`);
+  const ORD = {conferindo:0, fila:1, conferido:2, erro:3, pulado:4};
+  const ordem = cards.map((c,i)=>[c,i]).sort((a,b)=>ORD[a[0].estado]-ORD[b[0].estado] || a[1]-b[1]), pulados = ordem.filter(([c])=>c.estado==="pulado");
+  const linha = ([c,i])=>{
+    const sit = c.estado==="conferindo" ? pill("info vivo",`<span class="giro" style="width:10px;height:10px"></span>conferindo`) : c.situacao ? pill(...SITL[c.situacao])
+      : c.estado==="erro" ? pill("erro","✕ erro") : c.estado==="fila" ? pill("neutro","na fila") : pill("neutro", "⏭️ "+esc(c.acao.replace(/^pulado: /,"")));
+    const pontos = junta([c.divergentes&&`❌ ${c.divergentes}`, c.alertas&&`⚠️ ${c.alertas}`, c.fotos_a_refazer&&`📷 refazer: ${c.fotos_a_refazer}`], " · ") || (c.estado==="erro" ? c.acao : "");
+    const btn = c.estado==="conferindo" ? (vendo ? `<button class="btn" onclick="aoVivo()">ao vivo</button>` : "") : c.painel ? `<button class="btn" onclick="ver(${i})">ver</button>` : "";
+    return `<tr class="${c.estado==="conferindo"?"atual":""} ${vendo?.i===i?"visto":""} ${c.estado==="pulado"?"pulado":""}"><td><b class="mono">${esc(c.placa||"—")}</b><span class="desc mono">${esc(c.codigo)}</span></td>
+      <td>${esc(c.veiculo.slice(0,48))}<span class="desc">criado ${esc(c.criado)}</span></td><td>${esc(c.vistoria)}</td><td>${sit}</td>
+      <td class="sub" style="max-width:420px">${esc(pontos)}</td><td class="sub">${c.segundos?dur(c.segundos):""}${c.custo_rs?` · R$ ${esc(c.custo_rs)}`:""}</td><td>${btn}</td></tr>`; };
+  put("lote", `<tr><th>Placa</th><th>Veículo</th><th>Vistoria</th><th>Situação</th><th>Pontos</th><th>Tempo · custo</th><th></th></tr>`
+    + ordem.filter(([c])=>c.estado!=="pulado").map(linha).join("")
+    + (pulados.length ? `<tr><td colspan="7"><button class="btn" onclick="verPulados=!verPulados; lote(ultimo)">${verPulados?"▾ esconder":"▸ mostrar"} ${pulados.length} card(s) não abertos (com analista, sem placa ou fora da seleção)</button></td></tr>`
+      + (verPulados ? pulados.map(linha).join("") : "") : ""));
+  const v = vendo && cards[vendo.i];
+  $("vendo").hidden = !v;
+  put("vendo", v ? `<div class="aviso">👁️ Vendo o card <span class="mono">${esc(v.placa)}</span> · ${esc(v.veiculo.slice(0,40))} (já conferido)<button class="btn" onclick="aoVivo()">⟵ voltar ao vivo</button></div>` : "");
+}
+async function ver(i){ try { const r = await fetch(`/card/${i}`, {cache:"no-store"}); vendo = {i, estado: await r.json()}; } catch { vendo = null; }
+  Object.keys(cacheHtml).forEach(k=>delete cacheHtml[k]); if (ultimo) render(ultimo.__vivo || ultimo); window.scrollTo({top: $("vendo").offsetTop - 90, behavior:"smooth"}); }
+function aoVivo(){ vendo = null; Object.keys(cacheHtml).forEach(k=>delete cacheHtml[k]); if (ultimo) render(ultimo.__vivo || ultimo); }
+function render(e){
+  ultimo = e; e.__vivo = e;
+  const rodando = e.status === "rodando";
+  $("topo").classList.toggle("rodando", rodando);
+  const stt = {rodando:["info vivo",`<span class="ponto"></span>${esc((e.etapa||"iniciando").replace(/\s*\(.*$/,"").slice(0,48))}`], concluido:["ok","✓ concluído"], erro:["erro","✕ parou com erro"]}[e.status] || ["neutro",esc(e.status)];
+  put("k-status", stt[1] + (e.revendo ? " · reprise" : "")); $("k-status").className = "pill "+stt[0];
+  put("k-card", e.card?.placa ? `<span class="placa"><i>BRASIL</i><span>${esc(e.card.placa)}</span></span><div><b>${esc((e.card.veiculo||"").replace(/^[^,]+,\s*/,""))}</b><span class="desc">${esc((e.card.veiculo||"").split(",")[0])} · cotação de ${esc(e.card.criado_em)}</span></div>` : "");
+  put("k-custo", e.custos?.length ? brl((e.custo_total_usd||0)*e.dolar, 3) + ` <span class="sub">(${e.custos.length})</span>` : "R$ 0");
+  put("k-inc", String(e.incertezas?.length||0));
+  put("k-grav", e.gravados ? `${e.gravados} gravada(s)` : `${e.bloqueados??0} bloqueada(s)`);
+
+  lote(e);
+  if (vendo) e = {...e, ...vendo.estado, status: "concluido"};  // botão "ver": seções mostram o card escolhido
+  // esteira de etapas
+  const plano = (e.plano && e.plano.length ? e.plano : (e.etapas||[]).map(t=>[t.n,t.titulo])).filter(p=>!["!","$"].includes(p[0]));
+  const porN = {}; (e.etapas||[]).forEach(t=>porN[t.n]=t);
+  const feitos = plano.filter(([n])=>porN[n]?.fim || (porN[n] && !rodando)).length;
+  $("barra").style.width = (e.status==="concluido" ? 100 : plano.length ? Math.max(4, 100*feitos/plano.length) : 4) + "%";
+  put("esteira", plano.map(([n,tit])=>{ const t = porN[n], agora = t && !t.fim && rodando;
+    const cls = !t ? (rodando ? "" : "fora") : agora ? "agora" : (e.status==="erro" && t===e.etapas.at(-1) ? "falhou" : "feito");
+    const bola = cls==="feito" ? "✓" : cls==="agora" ? `<span class="giro"></span>` : cls==="falhou" ? "✕" : esc(n);
+    return `<div class="passo ${cls}"><div class="bola">${bola}</div><div class="t">${esc(tit)}</div><div class="d" ${agora?`data-desde="${t.inicio}"`:""}>${t ? (agora ? "" : t.fim ? dur(t.fim-t.inicio) : "") : (rodando?"na fila":"não rodou")}</div></div>`; }).join(""));
+
+  veredito(e); cardDados(e); fipe(e); vistoria(e); documentos(e); tabelaIA(e); preenchimento(e); incertezas(e); custos(e);
+  estado("e-card", e, ["3"]); estado("e-fipe", e, ["4c"]); estado("e-vist", e, ["4b"]); estado("e-docs", e, ["4","5b"]);
+  estado("e-ia", e, ["5"]); estado("e-conf", e, ["6"]); estado("e-prop", e, ["8"]); estado("e-veredito", e, ["7"]);
+  relogio(); seguir(e);
+  if ((e.log||[]).length !== nlog) { nlog = e.log.length; $("nlog").textContent = nlog; const l=$("log"); l.textContent = e.log.join("\n"); if ($("rolar").checked) l.scrollTop = l.scrollHeight; }
+}
+
+function veredito(e){
+  const conf = e.conferencia||[], n = s => conf.filter(i=>i.status===s).length;
+  const V = {OK:["ok","✅","Pode seguir","tudo conferido, nenhum problema"], VERIFICAR:["alerta","⚠️","Verificar","precisa de olho humano antes de aprovar"],
+             DIVERGENTE:["erro","❌","Divergente","erro no cadastro: corrigir antes de aprovar"]}[e.situacao];
+  const cont = conf.length ? `<div class="contagem">${pill("ok",`✅ ${n("OK")} ok`)}${pill("alerta",`⚠️ ${n("ALERTA")} alerta`)}${pill("erro",`❌ ${n("DIVERGENTE")} divergente`)}${n("NAO_VERIFICAVEL")?pill("neutro",`❔ ${n("NAO_VERIFICAVEL")} não verificável`):""}</div>` : "";
+  put("veredito", V ? `<div class="veredito entra"><div class="selo ${V[0]}">${V[1]}</div><div><h3>${V[2]}</h3><span class="sub">${V[3]}</span>${cont}</div></div>`
+    : e.status==="rodando" ? `<div class="veredito analisando varredura"><div class="selo"><span>🔎</span></div><div><h3>Analisando…</h3><span class="sub">${esc(e.etapa||"")}</span></div></div>`
+    : `<div class="veredito"><div class="selo neutro">—</div><div><h3>Sem veredito</h3><span class="sub">a execução parou antes do fim</span></div></div>`);
+  // resumo para a analista: o que o robô fez nesta execução
+  const f = e.fipe, vr = e.vistoria?.resumo, docs = Object.values(e.documentos||{}), tempo = (e.etapas?.at(-1)?.fim||e.agora) - (e.inicio_card||e.inicio);
+  const d = [];
+  if (f) d.push([f.certeza?"OK":f.status, "🏷️", f.certeza?"Modelo confirmado na FIPE oficial":"Modelo × FIPE: "+st(f.status)[2].toLowerCase(),
+    f.oficial ? `${f.oficial.Modelo} · ${f.oficial.Valor} (${f.mes})` : f.detalhe]);
+  if (vr) d.push([vr.fotos_com_problema.length||vr.avarias.length||vr.vidros_danos.length?"ALERTA":"OK", "📸", `${vr.fotos_analisadas} fotos analisadas pela IA`,
+    junta([`${vr.fotos_com_problema.length} a refazer/conferir`, vr.avarias.length&&`${vr.avarias.length} possível(is) avaria(s)`, vr.vidros_danos.length?`${vr.vidros_danos.length} dano(s) em vidro`:"vidros sem dano", vr.painel.km[0]&&`km ${vr.painel.km[0].replace(/[^\d.]/g,"")}`])]);
+  if (docs.length) d.push([docs.some(x=>Object.values(x.conferencia||{}).some(v=>v!=="OK"))?"DIVERGENTE":"OK", "📄", `${docs.length} documentos lidos pelo OCR local`,
+    `${docs.reduce((n,x)=>n+x.linhas,0)} linhas · nada saiu do computador`]);
+  if (e.incertezas?.length) d.push(["ALERTA", "❔", `${e.incertezas.length} informação(ões) sem certeza`, "registradas para revisão humana"]);
+  if (e.status!=="rodando" && !e.lote) d.push(["OK", "⏱️", `${dur(tempo)} · ${brl((e.custo_total_usd||0)*e.dolar, 3)} de IA`, `${e.custos?.length||0} chamadas · ${e.gravados?e.gravados+" gravação(ões) no CRM":"nada alterado no CRM"}`]);
+  put("destaques", d.length ? `<div class="itens">${d.map(([s,ic,t,x])=>`<div class="item ${s} entra"><span class="ico">${ic}</span><div><b>${esc(t)}</b><span class="desc">${esc(x)}</span></div></div>`).join("")}</div>` : "");
+  const ordem = {DIVERGENTE:0, ALERTA:1, NAO_VERIFICAVEL:2, OK:3};
+  if (conf.length) put("conf", `<div class="itens">${[...conf].sort((a,b)=>ordem[a.status]-ordem[b.status]).map(i=>`<div class="item ${esc(i.status)} entra"><span class="ico">${st(i.status)[1]}</span><div><b>${esc(i.nome)}</b><span class="desc">${esc(i.detalhe)}</span></div></div>`).join("")}</div>`);
+}
+
+const ROT = {veiculo:"Modelo", placa:"Placa", tipo_veiculo:"Tipo", ano_fabricacao:"Ano fabricação", combustivel:"Combustível", cambio:"Câmbio",
+  veiculo_de_trabalho_taxi_uber:"Uso trabalho (táxi/app)", valor_fipe:"Valor FIPE", valor_protegido:"Valor protegido", _depreciacao:"Depreciação",
+  _cota_no_card:"Cota de participação", _rastreador_no_card:"Rastreador", _tabela_no_card:"Tabela", _dia_vencimento:"Dia de vencimento",
+  estado_circulacao:"Estado", cidade_circulacao:"Cidade", cooperativa:"Cooperativa", implementos:"Implementos", criado_em:"Cotação criada em"};
+const GRUPOS = [["Veículo",["veiculo","placa","tipo_veiculo","ano_fabricacao","combustivel","cambio","veiculo_de_trabalho_taxi_uber"]],
+  ["Valores",["valor_fipe","valor_protegido","_depreciacao","_cota_no_card","_rastreador_no_card"]],
+  ["Plano",["_tabela_no_card","_planos","_dia_vencimento"]], ["Circulação",["estado_circulacao","cidade_circulacao","cooperativa","implementos","criado_em"]]];
+function valorCard(k, v){ if (v===true) return "sim"; if (v===false) return "não"; if (v==="Selecione"||v===""||v==null) return `<span class="sub">não informado</span>`;
+  if (k==="_planos") return Object.entries(v).map(([p,x])=>`${pill("info",esc(p))} ${brl(x)}`).join("<br>"); return esc(v); }
+function cardDados(e){
+  if (!e.card || !Object.keys(e.card).length) return;
+  put("card", `<div class="grupos entra">${GRUPOS.map(([t,ks])=>`<div class="grupo"><h3>${t}</h3>${kv(Object.fromEntries(ks.filter(k=>k in e.card).map(k=>[k==="_planos"?"Mensalidade":ROT[k]||k, valorCard(k, e.card[k])])))}</div>`).join("")}</div>`);
+}
+
+function fipe(e){
+  const passos = e.passos?.fipe || [], f = e.fipe, vivo = passos.some(p=>p.estado==="rodando");
+  $("fipe-site").className = "site" + (vivo ? " vivo" : "");
+  put("fipe-site", vivo ? `<span class="giro"></span> consultando veiculos.fipe.org.br…` : passos.length ? `🌐 veiculos.fipe.org.br · ${passos.length} passos` : `🌐 veiculos.fipe.org.br · aguardando`);
+  chaveado("fipe-passos", passos.map((p,i)=>[String(i), `<li class="${p.estado} entra"><span class="m">${p.estado==="rodando"?`<span class="giro" style="width:11px;height:11px"></span>`:p.estado==="erro"?"✕":"✓"}</span>
+    <span class="txt">${esc(p.texto)}</span>${p.feito?`<span class="desc">→ ${esc(p.feito)}</span>`:""}<span class="desc" ${p.estado==="rodando"?`data-desde="${p.inicio}"`:""}>${p.fim?dur(p.fim-p.inicio):""}</span></li>`]));
+  if (!f) { if (passos.length) put("fipe", `<div class="veredito analisando varredura" style="padding:14px"><div class="selo" style="width:56px;height:56px;font-size:26px"><span>🏷️</span></div><div><b>Consultando a FIPE oficial…</b><span class="desc">${esc(passos.at(-1).texto)}</span></div></div>`); return; }
+  const o = f.oficial, pv = f.provas||{}, ia = f.ia;
+  put("fipe-mes", o ? `${esc(f.mes)} · autenticação <span class="mono">${esc(o.Autenticacao)}</span>` : "");
+  const cabeca = `<div class="item ${esc(f.status)} entra" style="margin-bottom:12px"><span class="ico">${st(f.status)[1]}</span><div><b>${f.certeza?"Modelo confirmado com certeza":st(f.status)[2]}</b><span class="desc">${esc(f.detalhe)}</span></div></div>`;
+  if (!o) return put("fipe", cabeca);
+  const igual = (a,b)=>String(a||"").toUpperCase()===String(b||"").toUpperCase();
+  const comp = `<div class="compara"><div class="bloco"><span class="sub">O card diz</span><b>${esc(f.card.modelo)}</b><span class="desc">${esc(f.card.codigo||"sem código FIPE")} · ${esc(f.card.ano_modelo)} · ${esc(f.card.valor)}</span></div>
+    <div class="seta">${igual(f.card.modelo,o.Modelo)?"＝":"≠"}</div>
+    <div class="bloco"><span class="sub">FIPE oficial · ${f.busca==="modelo"?"achada pelo nome mais próximo":"pelo código do card"}</span><b>${esc(o.Modelo)}</b><span class="desc">${esc(o.CodigoFipe)} · ${esc(o.AnoModelo)} ${esc(o.Combustivel)} · ${esc(o.Valor)}</span>
+    ${f.mais_proximo?`<span class="desc">nomes parecidos com "${esc(f.mais_proximo.nome_no_card)}":</span>${li(f.mais_proximo.ranking.slice(0,3), x=>`${esc(x.modelo)} <b>${Math.round(x.semelhanca*100)}%</b>`)}`:""}</div></div>`;
+  const provas = [pv.crlv_modelo&&`CRLV: <b>${esc(pv.crlv_modelo)}</b>`, pv.cilindrada&&`cilindrada <b>${pv.cilindrada}cc</b>`, pv.combustivel&&`combustível <b>${esc(pv.combustivel)}</b>`,
+    pv.cambio&&`câmbio <b>${esc(pv.cambio)}</b>`, f.ano_pelo_chassi&&`chassi → ano <b>${f.ano_pelo_chassi}</b>`, ...(pv.fotos_versao||[]).filter(x=>/VERSAO/.test(x)).map(x=>`foto: ${esc(x.toLowerCase())}`)].filter(Boolean);
+  const decisao = ia ? `<div class="ia-box entra"><b>🤖 IA: ${esc(ia.versao||"não decidiu")}</b> ${pill(CERT(ia.certeza),"certeza "+esc(ia.certeza))}
+    ${pill(ia.card_esta_correto==="sim"?"ok":ia.card_esta_correto==="nao"?"erro":"alerta", ia.card_esta_correto==="sim"?"card correto":ia.card_esta_correto==="nao"?"card errado":"incerto")}
+    <span class="desc" style="margin-top:4px">${esc(ia.justificativa)}</span>${li(ia.pontos_de_atencao, x=>"⚠️ "+esc(x))}</div>` : "";
+  const versoes = `<table><tr><th>Versões da FIPE</th><th>Valor</th><th>IA (decide)</th><th>Regras (contraprova)</th></tr>${(f.candidatas||[]).map(c=>`<tr class="${c.ia==="possível"?"vence":""}">
+    <td><b>${esc(c.modelo)}</b><span class="desc">${esc(c.combustivel)} ${c.codigo_fipe?"· "+esc(c.codigo_fipe):""}</span></td><td>${esc(c.valor||"")}</td>
+    <td>${c.ia==="possível"?pill("ok","✓ bate com as provas"):c.ia?`<span class="sub">✖ ${esc(c.ia)}</span>`:"—"}</td><td>${c.eliminada?`<span class="sub">✖ ${esc(c.eliminada)}</span>`:pill("ok","fica")}</td></tr>`).join("")}</table>`;
+  put("fipe", cabeca + comp + (provas.length?`<p style="margin:12px 0 0"><span class="sub">Provas do carro:</span> ${provas.join(" · ")}</p>`:"") + decisao + versoes);
+}
+
+const temDano = a => !!a && ((a.avarias||[]).some(x=>x.tipo) || (a.vidros?.danos||[]).some(x=>x.tipo));
+function vistoria(e){
+  const v = e.vistoria, fotos = e.fotos||[];
+  if (!fotos.length) return;
+  const r = v?.resumo, resp = v?.fotos||{}, prob = new Set((r?.fotos_com_problema||[]).map(p=>p.foto));
+  const analisando = !!v && !r, prontas = Object.keys(resp).length;
+  const alvo = analisando ? fotos.filter(f=>!/documento cnh|comprovante/i.test(f.rotulo)).length : prontas;
+  put("vist-modelo", v ? `${esc(v.modelo)}${v.segundos?` · ${v.segundos}s`:""}` : "");
+  put("vist-prog", v ? `<div class="sub">${analisando?`<span class="giro" style="width:10px;height:10px;color:var(--acento)"></span> analisando foto por foto`:"✓ análise concluída"} · <b>${prontas}</b> de ${alvo} fotos</div><div class="progresso"><div style="width:${100*prontas/Math.max(alvo,1)}%"></div></div>` : "");
+  if (r) { const vc = r.veiculo, pn = r.painel;
+    put("vist-resumo", `<div class="resumo entra">
+      <div class="bloco"><span class="sub">Veículo nas fotos</span><b>${esc(junta([vc.marca,vc.modelo]," ")||"—")}</b><span class="desc">${esc(junta([vc.tipo,vc.carroceria,vc.cor]).toLowerCase())}</span><span class="desc">placa lida: ${esc(Object.entries(r.placas_lidas).map(([p,n])=>`${p} (${n}x)`).join(", ")||"nenhuma")}</span></div>
+      <div class="bloco"><span class="sub">Painel</span><b>${pn.ligado===true?"ligado":pn.ligado===false?"desligado":"não aparece"}</b><span class="desc">${esc(pn.km.join(", ")||"km não lido")}</span>${pn.mensagens.length?`<span class="desc">mensagem: ${esc(pn.mensagens.join(", "))}</span>`:""}</div>
+      <div class="bloco"><span class="sub">Fotos × card</span>${r.cruzamento.map(c=>pill(st(c.status)[0], st(c.status)[1]+" "+esc(c.item))).join(" ")||"—"}</div>
+      <div class="bloco"><span class="sub">Vidros</span>${r.vidros_danos.length?pill("erro",`${r.vidros_danos.length} possível(is) dano(s)`):pill("ok","nenhum dano visto")}${li(r.vidros_danos.map(d=>`${d.vidro}: ${d.tipo}`))}</div>
+      <div class="bloco"><span class="sub">Avarias (confirmar olhando)</span>${r.avarias.length?pill("alerta",`${r.avarias.length} possível(is)`):pill("ok","nenhuma")}${li(r.avarias.map(a=>`${a.local}: ${a.tipo}`))}</div>
+      <div class="bloco"><span class="sub">Fotos a refazer / conferir</span>${r.fotos_com_problema.length?pill("erro",`${r.fotos_com_problema.length} foto(s)`):pill("ok","todas ok")}${li(r.fotos_com_problema.map(p=>p.foto))}</div></div>`); }
+  const filtro = $("vist-filtro").checked;
+  const itens = fotos.map((f,i)=>[f,i]).filter(([f])=>!filtro || prob.has(f.rotulo) || temDano(resp[f.rotulo])).map(([f,i])=>{
+    const a = resp[f.rotulo], q = a?.qualidade_da_foto||{};
+    const cls = !a ? "" : a.erro || a.corresponde_ao_rotulo===false || q.iluminacao==="ruim" ? "problema" : temDano(a) ? "atencao" : "boa";
+    const tags = !a ? "" : a.erro ? pill("erro","IA falhou") : junta([a.corresponde_ao_rotulo===false&&pill("erro","não confere"), q.iluminacao==="ruim"&&pill("erro","escura"),
+      temDano(a)&&pill("alerta","possível dano"), a.estado_geral&&EST[a.estado_geral]&&pill(EST[a.estado_geral][0],EST[a.estado_geral][1]), a.painel?.aparece&&a.painel.km&&pill("info","km")], " ");
+    const pulada = /documento cnh|comprovante/i.test(f.rotulo);
+    const fila = !v || a ? "" : analisando && !pulada ? `<div class="fila scan">analisando…</div>` : `<div class="fila">${pulada?"lida pelo OCR local":"não analisada"}</div>`;
+    return [f.rotulo, `<div class="foto ${cls} ${a?"entra":""}" onclick="abrirFoto(${i})"><img src="/img/${f.id}" loading="lazy" alt="">${fila}<div class="rot">${esc(f.rotulo)}</div><div class="tags">${tags}</div></div>`]; });
+  if (itens.length) chaveado("fotos", itens); else put("fotos", `<p class="vazio">nenhuma foto com problema</p>`);
+}
+function abrirFoto(i){
+  const e = ultimo, f = e.fotos[i], rot = f.rotulo, a = e.vistoria?.fotos?.[rot];
+  let info = `<h3 style="margin:0">${esc(rot)}</h3>`;
+  if (!a) info += `<p class="vazio">${e.vistoria?"não analisada pela IA (CNH e comprovante ficam no OCR local)":"análise das fotos pela IA desligada nesta execução"}</p>`;
+  else if (a.erro) info += pill("erro","IA falhou") + `<p>${esc(a.erro)}</p>`;
+  else { const vc = a.veiculo||{}, pn = a.painel||{}, vd = a.vidros||{}, q = a.qualidade_da_foto||{};
+    info += `<div>${a.corresponde_ao_rotulo===false?pill("erro","não é o que o rótulo pede"):pill("ok","confere com o rótulo")} ${pill(CERT(a.confianca),"IA: confiança "+esc(a.confianca))} ${q.iluminacao?pill(q.iluminacao==="ruim"?"erro":q.iluminacao==="regular"?"alerta":"ok","luz "+esc(q.iluminacao)):""}</div>
+      <p style="margin:4px 0">${esc(a.o_que_a_foto_mostra)}</p>${a.motivo_se_nao_corresponde?`<p class="desc">⚠️ ${esc(a.motivo_se_nao_corresponde)}</p>`:""}
+      ${kv({"Veículo":esc(junta([vc.tipo,vc.marca,vc.modelo,vc.versao_ou_detalhes])), "Carroceria / cor":esc(junta([vc.carroceria,vc.cor])), "Placa":esc(vc.placa_visivel),
+        "Painel":pn.aparece?esc(junta([pn.ligado===true?"ligado":pn.ligado===false?"desligado":"", pn.km&&"km "+pn.km, (pn.luzes_de_alerta_acesas||[]).join(", "), (pn.mensagens_na_tela||[]).join(", ")])):"",
+        "Vidros":esc(junta(["para_brisa","laterais","traseiro","retrovisores","farois_lanternas"].filter(k=>vd[k]).map(k=>`${k.replace("_"," ")}: ${vd[k]}`)," · ")),
+        "Pneus":a.pneus?.aparece?esc(junta([a.pneus.estado,a.pneus.observacoes])):"", "Motor":a.motor?.aparece?esc(a.motor.observacoes||"aparece"):"",
+        "Estado geral":esc(junta([a.estado_geral,a.estado_geral_descricao]))})}
+      ${(vd.danos||[]).filter(d=>d.tipo).length?`<div>${pill("erro","vidro")}${li(vd.danos.filter(d=>d.tipo), d=>`${esc(d.vidro)}: ${esc(d.tipo)} — ${esc(d.descricao)} (${esc(d.certeza)})`)}</div>`:""}
+      ${(a.avarias||[]).filter(x=>x.tipo).length?`<div>${pill("alerta","possível avaria")}${li(a.avarias.filter(x=>x.tipo), x=>`${esc(x.local)}: ${esc(x.tipo)} · ${esc(x.gravidade)} (certeza ${esc(x.certeza)})`)}</div>`:""}
+      ${(a.partes_visiveis||[]).length?`<div><span class="sub">Partes visíveis</span>${li(a.partes_visiveis, x=>`${esc(x.parte)} ${pill((EST[x.estado]||["neutro"])[0], esc(x.estado||"?"))} <span class="sub">${esc(x.observacao)}</span>`)}</div>`:""}
+      ${(a.pontos_de_atencao||[]).length?`<div><span class="sub">Pontos de atenção</span>${li(a.pontos_de_atencao)}</div>`:""}
+      <details><summary>resposta completa da IA · ${a._segundos}s</summary><pre>${esc(JSON.stringify(a,null,2))}</pre></details>`; }
+  abrir(`/img/${f.id}`, info);
+}
+function abrir(src, info){ $("modal-caixa").innerHTML = `<div class="img">${src?`<img src="${src}" alt="">`:""}</div><div class="detalhe">${info}</div>`; $("modal").classList.add("aberto"); }
+function fechar(){ $("modal").classList.remove("aberto"); }
+function abrirImg(id, titulo){ abrir(`/img/${id}`, `<h3 style="margin:0">${esc(titulo)}</h3>`); }
+document.addEventListener("keydown", ev => { if (ev.key==="Escape") fechar(); });
+
+function documentos(e){
+  const iaDocs = {}; (e.ia_docs?.documentos||[]).forEach(d=>iaDocs[d.origem]=d);
+  if (e.ia_docs) put("ia-docs", `<div class="item ${e.ia_docs.documentos.some(d=>d.corresponde_ao_card==="nao")?"DIVERGENTE":e.ia_docs.observacoes_graves.length?"ALERTA":"OK"} entra" style="margin-bottom:12px"><span class="ico">🤖</span><div>
+    <b>Documento que vale: ${esc(e.ia_docs.documento_correto)}</b><span class="desc">${esc(e.ia_docs.conclusao)}</span>${li(e.ia_docs.observacoes_graves, x=>"⚠️ "+esc(x))}</div></div>`);
+  const docs = Object.entries(e.documentos||{});
+  if (!docs.length) return;
+  window._docs = docs;
+  put("docs", docs.map(([rot,d],i)=>{ const ia = iaDocs[rot], achados = Object.entries(d.achados||{}).filter(([,v])=>v.length), conf = Object.entries(d.conferencia||{});
+    return `<div class="doc entra"><img src="/img/${d.imagem}" loading="lazy" onclick="abrirImg('${d.imagem}', _docs[${i}][0])" alt="">
+      <div class="corpo"><h3>${esc(rot)}</h3><div>${pill("info",esc(d.tipo))} <span class="sub">${d.linhas} linhas · ${d.segundos}s</span></div>
+      <div>${conf.map(([k,v])=>pill(v==="OK"?"ok":"erro", `${v==="OK"?"✓":"✕"} ${esc(k)} ${v==="OK"?"confere":"diverge"}`)).join(" ")}</div>
+      ${ia?`<div>${pill(ia.corresponde_ao_card==="sim"?"ok":ia.corresponde_ao_card==="nao"?"erro":"alerta", ia.corresponde_ao_card==="sim"?"🤖 é deste carro":ia.corresponde_ao_card==="nao"?"🤖 outro veículo":"🤖 inconclusivo")}<span class="desc">${esc(ia.veiculo_no_documento)}</span></div>`:""}
+      ${achados.length?`<details><summary>o que o OCR achou</summary>${kv(Object.fromEntries(achados.map(([k,v])=>[k, esc(v.join(", "))])))}</details>`:""}
+      <details><summary>texto completo do OCR</summary><pre>${esc((d.texto||[]).join("\n"))}</pre></details></div></div>`; }).join(""));
+}
+
+function tabelaIA(e){
+  const t = e.ia_tabela; if (!t) return;
+  const d = t.decisao, c = t.conferencia||{};
+  put("ia-modelo", t.modelo ? `${esc(t.modelo)} · ${t.segundos}s` : "");
+  put("ia", d ? `<div class="entra"><p style="margin:0 0 8px"><b style="font-size:17px">${esc(d.tabela_nome)}</b> ${pill(c.mesma_tabela?"ok":"erro", c.mesma_tabela?"✓ igual ao card":"≠ card: "+esc(c.tabela_no_card||""))} ${pill(CERT(d.confianca),"confiança "+esc(d.confianca))}</p>
+    ${kv({"Regional":esc(`${d.regional} — ${d.motivo_regional}`), "Linha da aceitação":esc(d.linha_aceitacao), "Exceções":esc((d.excecoes_aplicadas||[]).join("; ")||"nenhuma"),
+      "Cota":c.cota_esperada!=null?esc(`esperada R$ ${c.cota_esperada} · card R$ ${c.cota_no_card}`):"", "Revisão humana":esc(d.precisa_revisao_humana?"sim — "+d.motivo_revisao:"não")})}
+    <details><summary>justificativa da IA</summary><p>${esc(d.justificativa)}</p></details></div>` : pill("erro","IA falhou: "+esc(t.erro)));
+}
+
+const CAMPO = {proposto:["neutro","proposto"], digitado:["info vivo",`<span class="giro" style="width:10px;height:10px"></span> digitando`], confere:["ok","✓ na tela"], diverge:["erro","⚠️ diferente"], pulado:["alerta","pulado"]};
+function preenchimento(e){
+  if (!(e.propostas||[]).length && !(e.faltas||[]).length) return;
+  $("s-prop").hidden = false;
+  const inc = {}; (e.incertezas||[]).forEach(i=>inc[i.campo]=i);
+  put("prop", `<table><tr><th>Aba</th><th>Campo</th><th>Antes → depois</th><th>Fonte</th><th>Situação</th></tr>${e.propostas.map(p=>{ const c = CAMPO[p.estado]||["neutro",esc(p.estado)];
+    return `<tr><td>${esc(p.aba)}</td><td><b>${esc(p.rotulo)}</b>${inc[p.rotulo]?`<span class="desc">⚠️ ${esc(inc[p.rotulo].motivo)}</span>`:""}</td>
+    <td class="mono">${esc(p.atual||"(vazio)")} → <b>${esc(p.novo)}</b>${p.lido&&p.estado==="diverge"?`<span class="desc">na tela: ${esc(p.lido)}</span>`:""}</td><td class="sub">${esc(p.origem)}</td><td>${pill(c[0],c[1])}</td></tr>`; }).join("")}</table>`
+    + (e.faltas.length ? `<p><b>Não preenchido:</b></p>${li(e.faltas, x=>"❔ "+esc(x))}` : ""));
+  window._telas = e.telas||[];
+  put("telas", _telas.map((t,i)=>`<div class="foto" onclick="abrirImg('${t.id}', _telas[${i}].titulo)"><img src="/img/${t.id}" alt=""><div class="rot">${esc(t.titulo)}</div></div>`).join(""));
+}
+function incertezas(e){
+  if ((e.incertezas||[]).length) put("inc", `<div class="itens">${e.incertezas.map(i=>`<div class="item ALERTA entra"><span class="ico">❔</span><div><b>${esc(i.campo)} <span class="mono sub">${esc(i.valor)}</span></b><span class="desc">${esc(i.motivo)} · ${esc(i.fonte)}</span></div></div>`).join("")}</div>`);
+}
+function custos(e){
+  if (!(e.custos||[]).length) return;
+  const grupos = {}; e.custos.forEach(c=>{ const k = c.tarefa.split(" · ")[0]; (grupos[k] ||= {n:0, usd:0, modelo:c.modelo}); grupos[k].n++; grupos[k].usd += c.usd||0; });
+  put("custos", `<table><tr><th>Tarefa</th><th>Modelo</th><th>Chamadas</th><th>Custo</th></tr>${Object.entries(grupos).map(([k,g])=>`<tr class="entra"><td>${esc(k)}</td><td class="mono sub">${esc(g.modelo)}</td><td>${g.n}</td><td>${brl(g.usd*e.dolar, 4)}</td></tr>`).join("")}
+    <tr><td><b>Total</b></td><td></td><td><b>${e.custos.length}</b></td><td><b>${brl((e.custo_total_usd||0)*e.dolar, 4)}</b> <span class="sub">US$ ${(e.custo_total_usd||0).toFixed(4)}</span></td></tr></table>`);
+}
+
+// apresentação: quando muda a etapa, rola até a seção dela
+const SECAO = {"3":"s-card","4":"s-docs","4b":"s-vist","4c":"s-fipe","5":"s-ia","5b":"s-docs","6":"s-conf","7":"s-veredito","8":"s-prop"};
+let etapaVista = null;
+function seguir(e){ const t = (e.etapas||[]).at(-1); if (vendo || !t || e.status!=="rodando" || t.n+":"+t.inicio===etapaVista) return; etapaVista = t.n+":"+t.inicio;
+  const alvo = $(SECAO[t.n]); if ($("seguir").checked && alvo && !alvo.hidden) window.scrollTo({top: alvo.getBoundingClientRect().top + scrollY - $("topo").offsetHeight - 70, behavior:"smooth"}); }
+// relógio: tempo total e duração das etapas/passos em andamento
+function relogio(){ if (!ultimo) return; const agora = Date.now()/1000;
+  const fim = ultimo.status==="rodando" ? agora : (ultimo.etapas?.at(-1)?.fim || ultimo.agora); $("k-tempo").textContent = dur(fim - ultimo.inicio);
+  if (ultimo.status==="rodando") document.querySelectorAll("[data-desde]").forEach(el=>el.textContent = dur(agora - Number(el.dataset.desde))); }
+async function buscar(){
+  try { const r = await fetch("/estado", {cache:"no-store"}); const e = await r.json();
+    if (e.versao !== versao) { versao = e.versao; render(e); } else if (ultimo) ultimo.agora = e.agora;
+  } catch { $("k-status").className="pill neutro"; $("k-status").textContent="robô encerrado (dados da última execução)"; return setTimeout(buscar, 3000); }
+  setTimeout(buscar, 800);
+}
+$("vist-filtro").addEventListener("change", ()=>ultimo && vistoria(ultimo));
+setInterval(relogio, 1000); buscar();
+</script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente de conferência</title>
+<style>
+:root{--fundo:#f4f6fa;--card:#fff;--txt:#1b2333;--sub:#667085;--borda:#e3e7ef;--acento:#3157d5;--acentof:#e8eefc;--ia:#7c3aed;
+  --ok:#14804a;--okf:#e5f6ec;--alerta:#a15c00;--alertaf:#fff3dc;--erro:#c0262d;--errof:#fde8e8;--neutrof:#eef0f4;
+  --raio:56,189,248;--palpebra:#cbd6f2;--esclera:#fff;--mini:#dfe5f1}
+@media (prefers-color-scheme:dark){:root{--fundo:#11151c;--card:#1a2029;--txt:#e6e9ef;--sub:#98a2b3;--borda:#2a3240;--acento:#7d9bff;
+  --acentof:#1f2a44;--ok:#4cc38a;--okf:#15301f;--alerta:#f0b44c;--alertaf:#33280f;--erro:#f27a7f;--errof:#3a1a1c;--neutrof:#232a35;
+  --palpebra:#3a4766;--esclera:#e9eefb;--mini:#232b38}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--txt);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1040px;margin:0 auto;padding:28px 16px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--sub)}
+h2{font-size:15px;margin:0 0 12px;display:flex;gap:8px;align-items:center}
+.caixa{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:18px;margin-top:18px}
+form{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1;min-width:200px;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--borda);border-radius:10px;background:var(--fundo);color:var(--txt);font-family:ui-monospace,Consolas,monospace}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px 18px;background:var(--acento);color:#fff;cursor:pointer}
+button:disabled{opacity:.5}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--borda);vertical-align:top}
+th{font-size:12px;color:var(--sub);font-weight:600}
+.mono{font-family:ui-monospace,Consolas,monospace}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.ok{background:var(--okf);color:var(--ok)}.alerta{background:var(--alertaf);color:var(--alerta)}.erro{background:var(--errof);color:var(--erro)}
+.info{background:var(--acentof);color:var(--acento)}.neutro{background:var(--neutrof);color:var(--sub)}
+.giro{width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+ol{margin:6px 0 0;padding-left:20px}li{margin:3px 0}
+.vazio{color:var(--sub);text-align:center;padding:24px}
+
+/* ---------- cards em análise ---------- */
+.ao-vivo{display:grid;gap:14px}
+.tile{border:1px solid var(--borda);border-radius:16px;padding:14px;background:linear-gradient(180deg,var(--acentof),var(--card) 70px);
+  position:relative;overflow:hidden;animation:entra .35s ease-out}
+.tile.pronto{background:linear-gradient(180deg,var(--okf),var(--card) 70px)}
+@keyframes entra{from{opacity:0;transform:translateY(8px)}}
+.topo{display:flex;gap:14px;align-items:center}
+.quem{flex:1;min-width:0}.quem b{font-size:16px}.quem .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etapa{margin-top:2px;font-weight:600;color:var(--acento)}.detalhe{font-size:12px;color:var(--sub);min-height:16px}
+.tempo{font:600 13px ui-monospace,Consolas,monospace;color:var(--sub)}
+.fases{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px}
+.fase{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--neutrof);color:var(--sub);display:inline-flex;gap:5px;align-items:center}
+.fase.feita{background:var(--okf);color:var(--ok)}
+.fase.agora{background:var(--acento);color:#fff;box-shadow:0 0 0 0 rgba(49,87,213,.5);animation:pulsa 1.6s infinite}
+@keyframes pulsa{70%{box-shadow:0 0 0 8px rgba(49,87,213,0)}}
+.barra{height:6px;border-radius:999px;background:var(--neutrof);overflow:hidden;margin-bottom:12px}
+.barra>div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--acento),var(--ia),var(--acento));background-size:200% 100%;
+  animation:corre 2s linear infinite;transition:width .6s ease}
+@keyframes corre{to{background-position:-200% 0}}
+
+/* olho */
+.olho{width:76px;height:52px;flex-shrink:0;overflow:visible}
+.olho .esclera{fill:var(--esclera);stroke:var(--acento);stroke-width:2.5}
+.olho .iris{animation:olha 3.4s ease-in-out infinite}
+.olho .palpebra{fill:var(--palpebra);transform:translateY(-44px);animation:pisca 4.2s infinite}
+.olho .feliz,.olho .zzz{display:none}
+@keyframes olha{0%,100%{transform:translateX(-9px)}25%{transform:translate(0,-3px)}50%{transform:translateX(9px)}75%{transform:translate(0,3px)}}
+@keyframes pisca{0%,88%,100%{transform:translateY(-44px)}92%{transform:translateY(0)}96%{transform:translateY(-44px)}}
+.olho.lendo .iris{animation:le 1.2s ease-in-out infinite}
+@keyframes le{0%{transform:translate(-9px,-3px)}45%{transform:translate(9px,-3px)}50%{transform:translate(-9px,3px)}95%{transform:translate(9px,3px)}100%{transform:translate(-9px,-3px)}}
+.olho.dormindo .palpebra{animation:none;transform:translateY(-8px)}.olho.dormindo .iris{animation:none}
+.olho.dormindo .zzz{display:block}
+.zzz text{font:700 11px system-ui;fill:var(--sub);animation:sobe 2.4s ease-in infinite;opacity:0}
+.zzz text:nth-child(2){animation-delay:.8s}.zzz text:nth-child(3){animation-delay:1.6s}
+@keyframes sobe{0%{opacity:0;transform:translate(0,0)}30%{opacity:1}100%{opacity:0;transform:translate(10px,-16px)}}
+.olho.feliz-on .esclera,.olho.feliz-on .pupila{display:none}.olho.feliz-on .feliz{display:block}
+.olho .feliz path{fill:none;stroke:var(--ok);stroke-width:4;stroke-linecap:round}
+.olho.erro-on .esclera{stroke:var(--erro)}.olho.erro-on .palpebra{animation:none;transform:translateY(-14px)}.olho.erro-on .iris{animation:none}
+
+/* fotos sendo escaneadas */
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;position:relative}
+.mini{position:relative;overflow:hidden;border-radius:9px;aspect-ratio:4/3;background:var(--mini)}
+.mini img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s,filter .4s}
+.mini img.carregada{opacity:1}
+.mini.espera img{filter:grayscale(.8) brightness(.85);opacity:.45}
+.mini.escaneando{box-shadow:0 0 0 2px rgba(var(--raio),.9),0 0 14px rgba(var(--raio),.55)}
+.mini.escaneando::before{content:"";position:absolute;inset:0;z-index:1;
+  background-image:linear-gradient(rgba(var(--raio),.18) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--raio),.18) 1px,transparent 1px);
+  background-size:12px 12px}
+.mini.escaneando::after{content:"";position:absolute;left:-10%;right:-10%;height:34%;top:-34%;z-index:2;
+  background:linear-gradient(180deg,transparent,rgba(var(--raio),.65) 70%,rgba(255,255,255,.95) 74%,transparent 76%);
+  filter:drop-shadow(0 0 6px rgba(var(--raio),.9));animation:varre 1.5s cubic-bezier(.45,0,.55,1) infinite;animation-delay:var(--atraso,0s)}
+@keyframes varre{to{top:100%}}
+.mini .marca{position:absolute;right:5px;bottom:5px;width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;z-index:3;
+  display:none;align-items:center;justify-content:center;transform:scale(0);transition:transform .3s cubic-bezier(.3,1.6,.6,1)}
+.mini.visto .marca,.mini.lido .marca{display:flex;transform:scale(1)}
+.mini.lido .marca{background:var(--acento)}
+.mini .rot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:10px 6px 3px;font-size:10px;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.65));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini.fantasma{background:linear-gradient(90deg,var(--mini) 0,var(--neutrof) 50%,var(--mini) 100%);background-size:200% 100%;animation:brilho 1.4s linear infinite}
+@keyframes brilho{to{background-position:-200% 0}}
+/* telas do CRM enquanto o robô anda por ele */
+.crm{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.janela{flex:1 1 380px;max-width:560px;border:1px solid var(--borda);border-radius:11px;overflow:hidden;background:var(--card);
+  box-shadow:0 8px 24px rgba(16,24,40,.14)}
+.barra-jan{display:flex;gap:6px;align-items:center;padding:6px 10px;background:var(--neutrof);font-size:11.5px;font-weight:600;color:var(--sub)}
+.barra-jan i{width:9px;height:9px;border-radius:50%;background:#f87171}.barra-jan i:nth-child(2){background:#fbbf24}.barra-jan i:nth-child(3){background:#34d399}
+.barra-jan span{margin-left:6px}
+.tela-vivo{position:relative;aspect-ratio:16/10;background:var(--mini);overflow:hidden}
+.tela-vivo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block;opacity:0;transform:scale(1.04);transition:opacity .5s,transform 6s ease-out}
+.tela-vivo img.carregada{opacity:1;transform:scale(1)}
+.feixe{position:absolute;left:0;right:0;height:26%;top:-26%;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(var(--raio),.35) 80%,rgba(255,255,255,.9) 83%,transparent 85%);animation:varre 2.4s linear infinite}
+.filme{display:flex;flex-direction:column;gap:8px}
+.filme figure{margin:0;display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--sub);animation:entra .4s ease-out}
+.filme img{width:92px;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:6px;border:1px solid var(--borda);opacity:0;transition:opacity .4s}
+.filme img.carregada{opacity:.85}
+.mini.baixada{animation:pop .5s cubic-bezier(.3,1.6,.6,1) both}
+@keyframes pop{from{transform:scale(.55);opacity:0}}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:10px}
+.legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Assistente de conferência</h1>
+  <div class="sub">O robô confere o card (só leitura) e a extensão mostra o resultado dentro do PowerCRM, campo a campo.</div>
+
+  <div class="caixa">
+    <form id="f">
+      <input id="codigo" placeholder="Código do card (ex.: REQayR67EB) ou placa" autocomplete="off" autofocus>
+      <button id="ir">Analisar</button>
+    </form>
+    <div class="sub" id="msg" style="margin-top:8px"></div>
+  </div>
+
+  <div class="caixa erro" id="velho" hidden><b>O servidor aberto é de uma versão antiga</b> e não manda o andamento das fotos.
+    Feche a janela do servidor (Ctrl+C) e rode de novo: <span class="mono">py -m robo.assistente</span></div>
+
+  <div class="caixa" id="s-vivo" hidden>
+    <h2>Em análise agora</h2>
+    <div class="ao-vivo" id="vivo"></div>
+    <div class="legenda"><span><i style="background:rgb(56,189,248)"></i>a IA está olhando</span><span><i style="background:var(--acento)"></i>arquivo lido (OCR)</span>
+      <span><i style="background:var(--ok)"></i>foto analisada</span><span><i style="background:var(--neutrof)"></i>na fila</span></div>
+  </div>
+
+  <div class="caixa">
+    <b>Cards</b>
+    <table id="lista"></table>
+  </div>
+
+  <div class="caixa sub">
+    <b style="color:var(--txt)">Como usar</b>
+    <ol>
+      <li>Digite o código do card e clique em <b>Analisar</b>. Uma janela do navegador abre o CRM só para ler (nada é gravado).</li>
+      <li>Quando ficar <span class="pill ok">pronto</span>, abra o card no PowerCRM: cada campo ganha um selo e aparece o painel lateral.</li>
+      <li>As sugestões aparecem dentro do campo. <b>Preencher</b> ou <b>Preencher tudo</b> só digita na tela: confira e clique em <b>Salvar</b> você mesmo.</li>
+      <li>Viu algo errado? Marque <b>está errado</b> no item e escreva a observação no fim do painel.</li>
+    </ol>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+// aberta de outra máquina da rede, a página pede a chave do analista uma vez (fica guardada neste navegador)
+const lerChave = () => { try { return localStorage.getItem("asx-chave") || ""; } catch { return ""; } };
+const H = {"X-Assistente": "1", "X-Chave": lerChave()};
+let pediuChave = false;
+function pedirChave() {
+  if (pediuChave) return;
+  pediuChave = true;
+  const c = (prompt("Chave do analista (peça a quem cuida do servidor):") || "").trim();
+  if (!c) return;
+  try { localStorage.setItem("asx-chave", c); } catch {}
+  H["X-Chave"] = c;
+  pediuChave = false;
+}
+const VERSAO = 5;  // a do servidor que esta página espera
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SIT = {OK:["ok","OK"], VERIFICAR:["alerta","Verificar"], DIVERGENTE:["erro","Divergente"]};
+const pill = (c, t) => `<span class="pill ${c}">${t}</span>`;
+const dur = s => s >= 60 ? `${Math.floor(s/60)}min ${String(Math.round(s%60)).padStart(2,"0")}s` : `${Math.round(s)}s`;
+const FASES = ["Abrindo o CRM", "Lendo os arquivos", "Escaneando as fotos", "FIPE oficial", "Tabela e regras", "Documentos e resultado"];
+const DOCUMENTO = /documento|cnh|crlv|comprovante|selfie|anexo|chassi/i;
+const PESSOAL = /documento cnh|comprovante/i;  // a IA das fotos não olha CNH e comprovante (só o OCR local)
+const CHECK = `<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+$("f").onsubmit = async ev => {
+  ev.preventDefault();
+  const codigo = $("codigo").value.trim();
+  if (!codigo) return;
+  $("ir").disabled = true;
+  try {
+    const r = await fetch("/api/analisar", {method:"POST", headers:{...H, "Content-Type":"application/json"}, body: JSON.stringify({codigo})});
+    const j = await r.json();
+    $("msg").textContent = r.ok ? (j.ja_estava ? "Esse card já está na fila." : `${codigo} entrou na fila.`) : (j.erro || "erro");
+    if (r.ok) $("codigo").value = "";
+  } catch { $("msg").textContent = "Servidor não respondeu."; }
+  $("ir").disabled = false;
+  atualizar();
+};
+
+// ---------- olho ----------
+function olho(id) {
+  const forma = "M4 26 Q38 -4 72 26 Q38 56 4 26Z";
+  return `<svg class="olho" viewBox="0 0 76 52" aria-hidden="true"><defs><clipPath id="cl-${id}"><path d="${forma}"/></clipPath></defs>
+    <path class="esclera" d="${forma}"/>
+    <g clip-path="url(#cl-${id})" class="pupila"><g class="iris"><circle cx="38" cy="26" r="13" fill="var(--acento)"/><circle cx="38" cy="26" r="13" fill="url(#gr-${id})"/>
+      <circle cx="38" cy="26" r="6" fill="#0b1020"/><circle cx="42" cy="21" r="2.6" fill="#fff"/></g>
+      <rect class="palpebra" x="0" y="0" width="76" height="52"/></g>
+    <radialGradient id="gr-${id}"><stop offset="55%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(0,0,0,.25)"/></radialGradient>
+    <g class="feliz"><path d="M14 30 Q38 6 62 30"/></g>
+    <g class="zzz"><text x="60" y="12">z</text><text x="66" y="6">z</text><text x="72" y="0">z</text></g></svg>`;
+}
+
+function faseDe(t) {
+  if (t.estado === "pronto") return 6;
+  if (t.fase === "documentos") return 5;
+  if (t.fase !== "analise") return 0;
+  const e = t.etapa || "";
+  return /tabela|compara|Confer|Resultado/i.test(e) ? 4 : /FIPE/i.test(e) ? 3 : /fotos/i.test(e) ? 2 : 1;
+}
+
+// ---------- cartão de cada card em análise (montado uma vez; depois só muda classe e texto: as animações não reiniciam) ----------
+const cartoes = new Map(), miniaturas = new Map();
+function cartao(t) {
+  let el = cartoes.get(t.pedido);
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "tile";
+    const id = t.pedido.replace(/\W/g, "");
+    el.innerHTML = `<div class="topo">${olho(id)}<div class="quem"><b class="mono" data-c="placa"></b> <span class="sub mono" data-c="codigo"></span>
+        <div class="sub" data-c="veiculo"></div><div class="etapa" data-c="etapa"></div><div class="detalhe" data-c="detalhe"></div></div>
+        <div class="tempo" data-c="tempo"></div></div>
+      <div class="fases">${FASES.map((f, i) => `<span class="fase" data-f="${i}">${f}</span>`).join("")}</div>
+      <div class="barra"><div style="width:4%"></div></div>
+      <div class="crm" hidden><div class="janela"><div class="barra-jan"><i></i><i></i><i></i><span data-c="tela"></span></div>
+        <div class="tela-vivo"><div class="feixe"></div></div></div><div class="filme"></div></div>
+      <div class="fotos"></div>`;
+    $("vivo").prepend(el);
+    cartoes.set(t.pedido, el);
+  }
+  return el;
+}
+
+function pintar(t, agora) {
+  const el = cartao(t), f = faseDe(t), fotos = t.fotos || [], vistas = new Set(t.vistas || []), lidos = new Set(t.lidos || []);
+  const texto = (k, v) => { const n = el.querySelector(`[data-c=${k}]`); if (n.textContent !== v) n.textContent = v; };
+  texto("placa", t.placa || t.pedido); texto("codigo", t.placa ? (t.codigo || t.pedido) : "");
+  texto("veiculo", t.veiculo || (t.estado === "fila" ? "na fila: espera o card da frente terminar" : "procurando o card no CRM…"));
+  texto("etapa", t.estado === "pronto" ? "Pronto! Abra o card no PowerCRM." : t.estado === "fila" ? "Dormindo até chegar a vez…" : (t.etapa || ""));
+  texto("detalhe", t.estado === "rodando" ? (t.detalhe || (f === 2 ? `${vistas.size} de ${fotos.filter(r => !PESSOAL.test(r)).length} fotos olhadas` :
+        f === 1 ? `${lidos.size} arquivo(s) lido(s)` : f === 0 && fotos.length ? `${fotos.length} foto(s) baixada(s) até agora` : "")) : "");
+  texto("tempo", t.inicio && t.estado !== "fila" ? dur((t.estado === "pronto" ? t.fim : agora) - t.inicio) : "");
+  el.classList.toggle("pronto", t.estado === "pronto");
+  const o = el.querySelector(".olho");
+  o.classList.toggle("dormindo", t.estado === "fila");
+  o.classList.toggle("feliz-on", t.estado === "pronto");
+  o.classList.toggle("lendo", f === 1 || f === 5);
+  el.querySelectorAll(".fase").forEach(n => { const i = +n.dataset.f;
+    n.className = `fase ${i < f ? "feita" : i === f && t.estado === "rodando" ? "agora" : ""}`;
+    n.innerHTML = (i < f ? CHECK : "") + FASES[i]; });
+  const alvo = fotos.filter(r => !PESSOAL.test(r)).length || 1;
+  const pct = t.estado === "pronto" ? 100 : f === 2 ? 34 + 33 * vistas.size / alvo
+    : f === 0 ? Math.min(17, 3 + 2 * (t.telas || []).length + 0.3 * fotos.length) : [4, 18, 34, 70, 82, 92][f] || 4;  // no CRM anda com telas e fotos
+  el.querySelector(".barra>div").style.width = `${pct}%`;
+
+  // no CRM: telas que o robô vai fotografando (a última grande, as anteriores numa fileira)
+  const crm = el.querySelector(".crm"), telas = t.telas || [];
+  crm.hidden = !(f === 0 && telas.length && t.estado === "rodando");
+  if (!crm.hidden) {
+    const ultima = telas.length - 1, vivo = crm.querySelector(".tela-vivo");
+    texto("tela", telas[ultima].titulo);
+    if (vivo.dataset.i !== String(ultima)) {
+      vivo.dataset.i = ultima;
+      const img = document.createElement("img");
+      img.alt = "";
+      vivo.querySelector("img")?.remove();
+      vivo.prepend(img);
+      carregar(img, t, ultima, "tela");
+      crm.querySelector(".filme").innerHTML = telas.slice(0, ultima).map((x, i) => `<figure><img alt="" data-i="${i}"><figcaption>${esc(x.titulo)}</figcaption></figure>`).join("");
+      crm.querySelectorAll(".filme img").forEach(im => carregar(im, t, +im.dataset.i, "tela"));
+    }
+  }
+
+  const grade = el.querySelector(".fotos");
+  if (!fotos.length) {  // fotos ainda não chegaram: placas "fantasma" brilhando
+    if (!grade.querySelector(".fantasma") && t.estado !== "pronto") grade.innerHTML = Array(8).fill('<div class="mini fantasma"></div>').join("");
+    return;
+  }
+  if (grade.querySelector(".fantasma") || grade.children.length > fotos.length) grade.innerHTML = "";
+  for (let i = grade.children.length; i < fotos.length; i++) {  // cada foto baixada entra na grade na hora (as que já estão não piscam)
+    grade.insertAdjacentHTML("beforeend", `<div class="mini baixada" style="--atraso:${(i % 7) * .21}s">
+      <img alt=""><span class="marca">${CHECK}</span><span class="rot"></span></div>`);
+    carregar(grade.lastElementChild.querySelector("img"), t, i, "miniatura");
+  }
+  [...grade.children].forEach((m, i) => {
+    const rot = m.querySelector(".rot");
+    if (rot.textContent !== fotos[i]) { rot.textContent = fotos[i]; m.title = fotos[i]; }
+    const r = fotos[i], doc = DOCUMENTO.test(r);
+    let estado = "espera";
+    if (f === 0 && t.estado === "rodando") estado = "baixada";
+    else if (t.estado === "pronto" || f >= 3) estado = vistas.has(r) ? "visto" : lidos.has(r) ? "lido" : "visto";
+    else if (f === 1) estado = lidos.has(r) ? "lido" : doc ? "escaneando" : "espera";
+    else if (f === 2) estado = vistas.has(r) ? "visto" : lidos.has(r) ? "lido" : PESSOAL.test(r) ? "espera" : "escaneando";
+    if (f === 5 && t.estado === "rodando" && doc) estado = "escaneando";
+    if (!m.classList.contains(estado)) m.className = `mini ${estado}`;
+  });
+}
+
+// miniatura de foto ou tela do CRM; a foto pode ainda estar sendo gravada: tenta de novo algumas vezes
+async function carregar(img, t, i, tipo, tentativa = 0) {
+  const chave = `${tipo}/${t.pedido}/${t.inicio}/${i}`;
+  try {
+    if (!miniaturas.has(chave)) {
+      const r = await fetch(`/api/${tipo}/${encodeURIComponent(t.pedido)}/${i}`, {headers: H});
+      if (!r.ok) { if (tentativa < 4) setTimeout(() => carregar(img, t, i, tipo, tentativa + 1), 1500); return; }
+      miniaturas.set(chave, URL.createObjectURL(await r.blob()));
+    }
+    img.onload = () => img.classList.add("carregada");
+    img.src = miniaturas.get(chave);
+  } catch {}
+}
+
+async function atualizar(){
+  let lista;
+  try {
+    const r = await fetch("/api/fila", {headers:H, cache:"no-store"});
+    if (r.status === 403) { pedirChave(); return; }
+    $("velho").hidden = Number(r.headers.get("X-Versao") || 0) >= VERSAO;
+    lista = await r.json();
+  } catch { return; }
+  const agora = Date.now()/1000;
+  // em análise: rodando, na fila e os que acabaram de terminar (o olho sorri por uns segundos)
+  const vivos = lista.filter(t => ["rodando", "fila"].includes(t.estado) || (t.estado === "pronto" && agora - (t.fim || 0) < 12 && t.fotos));
+  vivos.forEach(t => pintar(t, agora));
+  for (const [pedido, el] of cartoes) if (!vivos.some(t => t.pedido === pedido)) { el.remove(); cartoes.delete(pedido); }
+  $("s-vivo").hidden = !vivos.length;
+
+  $("lista").innerHTML = !lista.length ? `<tr><td class="vazio">Nenhum card ainda.</td></tr>` :
+    `<tr><th>Card</th><th>Veículo</th><th>Estado</th><th>Resultado</th></tr>` + lista.map(t => {
+      const est = t.estado === "rodando" ? pill("info", `<span class="giro"></span>${esc(t.etapa || "analisando")} · ${dur(agora - t.inicio)}`)
+        : t.estado === "fila" ? pill("neutro", "na fila") : t.estado === "pronto" ? pill("ok", "pronto · abra no CRM")
+        : pill(t.estado === "pulado" ? "neutro" : "erro", esc(t.erro || t.estado));
+      const res = t.estado === "pronto" ? `${pill(...(SIT[t.situacao] || ["neutro", esc(t.situacao)]))}
+        <div class="sub">${t.sugeridos} sugestão(ões) · ${t.campos} campo(s)${t.custo_rs != null ? ` · R$ ${String(t.custo_rs).replace(".", ",")}` : ""}</div>` : "";
+      return `<tr><td><b class="mono">${esc(t.codigo || t.pedido)}</b><div class="sub mono">${esc(t.placa || "")}</div>
+        ${t.por?.length ? `<div class="sub">por ${esc(t.por.join(", "))}</div>` : ""}</td>
+        <td>${esc((t.veiculo || "").slice(0, 50))}</td><td>${est}</td><td>${res}</td></tr>`;
+    }).join("");
+}
+atualizar();
+setInterval(atualizar, 1200);
+</script>
+</body>
+</html>
