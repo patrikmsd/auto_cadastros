@@ -18,17 +18,23 @@ Rode sempre com `.venv\Scripts\python.exe` a partir da raiz, com `PYTHONIOENCODI
 
 ## Servidor (produção)
 
-Roda num servidor local da rede, numa sessão do Windows com tela: se o login automático do CRM falhar, a janela do
-navegador precisa aparecer para alguém terminar o login.
+Roda num **servidor Ubuntu sem tela** (headless) da rede local, como serviço systemd. Não existe janela de login:
+o robô entra sozinho com `login`/`password` do `.env` e clica na empresa (`empresa=` no `.env`, padrão
+`ANCORE PROTEÇÃO VEICULAR`, a que tem o funil de vendas `FUNIL_VENDAS`). Se o login falhar, o card dá erro com o motivo
+e a foto da página fica em `robo/saida/logs/login_falhou-*.png`.
 
-1. Instalar uma vez, no PowerShell como Administrador: `powershell -ExecutionPolicy Bypass -File servidor\instalar_servidor.ps1`
-   (cria a tarefa "Assistente PowerCRM", que liga o assistente quando o usuário entra no Windows, libera a porta 8780 no
-   Firewall só para rede privada/domínio e desliga a suspensão na tomada).
-2. `servidor\iniciar_assistente.bat` liga `robo.assistente --rede --sem-navegador` e religa o assistente 10 s depois se ele cair
-   (os reinícios ficam em `robo/saida/logs/reinicios.log`).
-3. Chave de cada analista: `python -m robo.assistente --nova-chave "Nome"` (lista: `--chaves`). Fica em `robo/saida/assistente/analistas.json`.
+Requisitos: Ubuntu 24.04 (Python 3.12+; no 22.04 o instalador explica como pôr o 3.12), usuário comum com sudo.
+
+1. Copiar o projeto (`git clone` ou cópia) e o `.env` (fora do Git) para o servidor.
+2. Da raiz, com o usuário do serviço: `bash servidor/instalar.sh`. Ele instala as bibliotecas do sistema, o `.venv`, o
+   Chromium do Playwright, cria e liga o serviço `assistente-powercrm` (religa sozinho 10 s depois de cair e liga junto com
+   o servidor) e, se o `ufw` estiver ativo, libera a porta 8780 só para redes internas. Para atualizar o código, rode de novo.
+3. Chave de cada analista: `.venv/bin/python -m robo.assistente --nova-chave "Nome"` (lista: `--chaves`). Fica em `robo/saida/assistente/analistas.json`.
 4. Extensão em cada PC: `chrome://extensions` → Modo do desenvolvedor → Carregar sem compactação → pasta `extensao/`.
    O ícone da extensão abre a janelinha de conexão: endereço do servidor (ex.: `http://192.168.0.50:8780`) e a chave.
+
+Comandos: `sudo systemctl status|restart|stop assistente-powercrm` · `journalctl -u assistente-powercrm -f`.
+No PC de desenvolvimento (Windows) o mesmo código roda com tela; `ROBO_SEM_TELA=1` força o modo do servidor.
 
 Logs: `robo/saida/logs/assistente-AAAAMMDD.log` (tudo o que sai no terminal, com hora). Custos de IA: `robo/saida/custos_ia.csv`.
 Incertezas: `robo/saida/incertezas.csv`. A porta 8780 é HTTP sem criptografia: **nunca abrir para a internet**.
@@ -53,6 +59,20 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · servidor Ubuntu sem tela
+
+- **Login 100% sem janela** (`robo/sessao.py`): depois do e-mail e senha o PowerCRM mostra "selecione a empresa"
+  (`/internal/changeCompany`); o robô agora clica na empresa do `.env` pela página. No servidor sem tela (`SEM_TELA`:
+  Linux sem `DISPLAY`, ou `ROBO_SEM_TELA=1`) nunca tenta abrir janela: se não chegar ao CRM em 3 minutos, o card dá erro
+  com o motivo e a foto da página. Testado no PowerCRM real: login + empresa em 10 s, reaproveitando a sessão em 3 s, e o
+  caminho de falha (empresa inexistente) dando o erro certo.
+- Trava de só leitura libera `/cdn-cgi/challenge-platform/` (verificação da Cloudflare, não é dado do CRM).
+- `servidor/instalar.sh` + serviço systemd no lugar do `.bat`/`.ps1` do Windows (removidos).
+- `robo/requirements.txt` com as versões fixadas; o instalador deixa só o `opencv-python-headless`.
+- `robo/assistente.py`: uma f-string que só abria no Python 3.12 foi reescrita (todos os módulos abrem a partir do 3.10;
+  as bibliotecas fixadas pedem 3.12).
+- Não testado: a instalação completa num Ubuntu 24.04 (o WSL desta máquina é 22.04, sem sudo).
+
 ### 2026-11-18 · preparação para rodar no servidor
 
 - **Login automático do CRM** (`robo/sessao.py`): com a sessão vencida, o robô entra sozinho, sem janela, com `login`/`password`
@@ -71,7 +91,7 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
   é limpa a cada card (o custo já foi gravado no resultado e no `custos_ia.csv`).
 - **Log em arquivo**: `robo/saida/logs/assistente-AAAAMMDD.log`.
 - Pedido com `Content-Length` negativo recusado (antes travava a thread lendo o corpo).
-- **Servidor**: `servidor/iniciar_assistente.bat` (liga e religa) e `servidor/instalar_servidor.ps1` (tarefa no Windows, Firewall, sem suspensão).
+- **Servidor**: `servidor/iniciar_assistente.bat` e `servidor/instalar_servidor.ps1` (Windows; trocados pelo Ubuntu na mudança acima).
 - **Extensão 0.10.0**: o ícone da extensão abre uma janelinha de conexão (servidor + chave + situação da conexão). A mesma
   tela continua em "Opções da extensão".
 

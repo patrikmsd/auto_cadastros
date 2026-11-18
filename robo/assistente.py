@@ -675,7 +675,8 @@ def analisar(pedido):
 
     incertezas.ANOTADAS.clear()  # o card anterior pode ter parado no meio, antes de guardar(): começa limpo
     inicio, chamadas = time.time(), len(custo_ia.DESTA_EXECUCAO)
-    pasta_exec = PASTA / f"{datetime.now():%Y%m%d-%H%M%S}-{re.sub(r'\W', '', pedido)}"
+    limpo = re.sub(r"\W", "", pedido)
+    pasta_exec = PASTA / f"{datetime.now():%Y%m%d-%H%M%S}-{limpo}"
     pasta_exec.mkdir(parents=True, exist_ok=True)
     _atualizar(pedido, estado="rodando", etapa="abrindo o PowerCRM (só leitura)", inicio=inicio, pasta=str(pasta_exec),
                fotos=[], arquivos=[], lidos=[], vistas=[], telas=[], detalhe="", fase="crm", placa="", veiculo="")

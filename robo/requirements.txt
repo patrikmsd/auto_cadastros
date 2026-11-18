@@ -1,8 +1,11 @@
+# versões que rodam hoje (Windows de desenvolvimento e Ubuntu do servidor)
 playwright==1.63.0
-rapidocr_onnxruntime
-opencv-python-headless
-openpyxl
-rapidfuzz
-anthropic
-google-genai
-pypdfium2
+rapidocr_onnxruntime==1.4.4
+onnxruntime==1.31.1
+opencv-python-headless==5.0.0.93
+numpy==2.5.4
+openpyxl==3.1.5
+rapidfuzz==3.14.6
+anthropic==2.3.0
+google-genai==2.33.0
+pypdfium2==5.14.0
