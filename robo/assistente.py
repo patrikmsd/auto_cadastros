@@ -903,11 +903,31 @@ def _trabalho(chave):
     return t
 
 
+def fipe_igual_confere(res):
+    """Código FIPE igual ao do card e Valor FIPE batendo: "confere", mesmo com a IA em dúvida só entre versões.
+    A dúvida não some: fica escrita na nota do item (e nas incertezas). Vale também para resultados já gravados."""
+    campos = res.get("campos") or []
+    valor_ok = any(c["nome"] == "vhclFipeVl" and c["status"] == "ok" for c in campos)
+    # só a dúvida de versão ("IA sem certeza"); IA × regras discordando do MODELO continua "conferir"
+    so_versao = str((res.get("fipe") or {}).get("detalhe") or "").startswith("IA sem certeza")
+    for c in campos:
+        if (c["nome"] == "vhclFipeCode" and c["status"] == "conferir" and valor_ok and so_versao and c.get("atual")
+                and _so_letras(c["atual"]) == _so_letras(c.get("encontrado"))):
+            c["status"] = "ok"
+            if not c.get("nota", "").startswith("código e valor iguais ao card"):
+                c["nota"] = ("código e valor iguais ao card; a IA só não teve certeza da versão (confira se quiser) · "
+                             + re.sub(r"^o código e o valor do card são os mesmos.*?· ", "", c.get("nota") or ""))
+            if (res.get("fipe") or {}).get("status") == "ALERTA":  # o quadro "FIPE oficial" do painel segue o campo
+                res["fipe"]["status"] = "OK"
+    return res
+
+
 def resultado(chave):
     t = _trabalho(chave)
     if not t:
         return None
     res = json.loads((Path(t["pasta"]) / "resultado.json").read_text(encoding="utf-8"))
+    fipe_igual_confere(res)
     obs = Path(t["pasta"]) / "observacoes.json"
     res["observacoes"] = json.loads(obs.read_text(encoding="utf-8")) if obs.exists() else []
     return res

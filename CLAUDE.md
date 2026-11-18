@@ -63,6 +63,14 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · FIPE igual ao card = confere
+
+- `fipe_igual_confere(res)`, aplicado ao entregar o resultado (vale para os já gravados): Código FIPE igual ao do card,
+  Valor FIPE batendo e dúvida da IA **só de versão** ("IA sem certeza") → "confere"; a dúvida fica na nota do item.
+  IA × regras discordando do **modelo** (ex.: XTZ Lander × FZ25 Fazer) continua "conferir".
+- Observações "que não chegavam": iam para o servidor antigo deste PC (127.0.0.1:8780, 7 observações no banco local),
+  não para o Ubuntu. A extensão precisa apontar para o endereço do servidor.
+
 ### 2026-11-18 · endereço do comprovante sugerido (extensão 0.14.0)
 
 - Endereço (CEP, logradouro, número, bairro): "...", "-", "0", "S/N" no card contam como vazio → vira **sugestão** com
