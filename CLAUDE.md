@@ -63,6 +63,14 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · tabela de preço relida quando o PDF muda + README
+
+- `robo/precos.py`: `tabelas_preco.json` guarda o nome, o tamanho e a data de cada PDF de preço; se algum mudar, os PDFs
+  são lidos de novo sozinhos. Antes era preciso apagar o cache à mão. Testado: 1ª leitura 4 s, depois cache, PDF com
+  data alterada → relido.
+- Os PDFs "VALLE TABELA PREÇO" têm o conteúdo da ANCORE: o nome não muda a conta, só aparece como fonte no resultado.
+- `README.md`: como testar no próprio PC (Windows) e como instalar no servidor.
+
 ### 2026-11-18 · análise automática dos cards do filtro
 
 - Quando a fila dos analistas está vazia, o trabalhador do `robo/assistente.py` lê a lista do filtro das analistas

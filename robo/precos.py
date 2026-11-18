@@ -47,6 +47,12 @@ def _colunas(precos, n):
     return None
 
 
+def _assinatura():
+    """Nome, tamanho e data de cada PDF de preço: mudou algum (PDF novo, trocado ou apagado) → lê de novo."""
+    return {f.name: [f.stat().st_size, int(f.stat().st_mtime)]
+            for padrao in PDFS.values() for f in sorted(config.RAIZ.glob(padrao))}
+
+
 def ler_pdfs():
     import pypdf
 
@@ -66,12 +72,20 @@ def ler_pdfs():
                 tabelas.append({"regional": regional, "arquivo": arquivo.name, "pagina": n_pag, "titulo": titulo,
                                 "faixas": [{"de": de, "ate": ate, "ouro": o, "prata": p, "bronze": b}
                                            for (de, ate), o, p, b in zip(faixas, *cols)]})
-    CACHE.write_text(json.dumps(tabelas, ensure_ascii=False, indent=2), encoding="utf-8")
+    CACHE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE.write_text(json.dumps({"pdfs": _assinatura(), "tabelas": tabelas}, ensure_ascii=False, indent=2), encoding="utf-8")
     return tabelas
 
 
 def tabelas():
-    return json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.exists() else ler_pdfs()
+    """Preços guardados em tabelas_preco.json; se os PDFs mudaram desde a última leitura, lê os PDFs de novo."""
+    try:
+        guardado = json.loads(CACHE.read_text(encoding="utf-8"))
+        if isinstance(guardado, dict) and guardado.get("pdfs") == _assinatura():
+            return guardado["tabelas"]
+    except (OSError, ValueError):
+        pass
+    return ler_pdfs()  # sem cache, cache do formato antigo (lista) ou PDF trocado
 
 
 def preco(regional, valor, pagina=1):
