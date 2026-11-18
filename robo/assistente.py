@@ -983,7 +983,8 @@ def observar(dados, quem=""):
         raise ValueError("card não analisado")
     corta = lambda v, n: str(v or "")[:n]
     obs = {"data_hora": f"{datetime.now():%d/%m/%Y %H:%M:%S}", "codigo": t["codigo"], "placa": t["placa"],
-           "analista": corta(quem if quem and quem != "local" else dados.get("analista"), 60), "texto": corta(dados.get("texto"), 4000),
+           "analista": corta(quem if quem and quem != "local" else (dados.get("analista") or quem), 60),
+           "texto": corta(dados.get("texto"), 4000),
            "campos_errados": [{k: corta(c.get(k), 300) for k in ("nome", "rotulo", "status", "sugerido", "no_card")}
                               for c in (dados.get("campos_errados") or [])[:40]],
            "preenchidos": {corta(k, 40): corta(v, 300) for k, v in list((dados.get("preenchidos") or {}).items())[:40]}}

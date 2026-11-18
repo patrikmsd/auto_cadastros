@@ -63,6 +63,16 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-18 · caixa "o que está errado" fixa no painel (extensão 0.12.0)
+
+- O card do PowerCRM é modal Bootstrap com enforceFocus: o foco na observação era puxado de volta para o modal e não
+  dava para digitar. O host do painel agora para focusin/focusout/teclas (menos Esc fora da caixa de texto).
+- Redesenhar o painel não volta mais ao topo: guarda rolagem, foco/cursor e os `details` abertos.
+- Caixa de retorno fixa no rodapé do painel (sem rolar): cada item marcado "está errado" entra na hora como etiqueta
+  (IA sugeriu X; × tira); texto opcional; "Enviar (N itens)". Falhou → avisa o motivo e mantém o texto e as marcações.
+- Campo "seu nome" removido: o nome vem da chave do analista no servidor.
+- Testado numa página que imita o card (com enforceFocus): 0 roubos de foco, envio com o item vinculado, rolagem mantida.
+
 ### 2026-11-18 · filtro do sistema desde 01/01/2020
 
 - `config.url_filtro_semana()` (usado pela análise automática, pelo lote e pela leitura do card) agora busca cards

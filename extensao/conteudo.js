@@ -9,6 +9,7 @@
   let preenchidos = {};  // nome do campo → {valor posto, valor que estava antes}
   let errados = {};      // nome do campo → o analista marcou a sugestão/conferência como errada
   let rascunho = "";     // texto da observação ainda não enviado (sobrevive aos redesenhos do painel)
+  let retornoAberto = false, enviando = false;  // caixa "o que está errado" no rodapé do painel
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
   const so = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\W/g, "").toUpperCase();
   const pedir = msg => new Promise(ok => chrome.runtime.sendMessage(msg, r => ok(r || {status: 0})));
@@ -64,7 +65,7 @@
     }
     if (a.codigo !== codigo) {
       limparTela();
-      codigo = a.codigo; res = null; servidor = {estado: "carregando"}; preenchidos = {}; errados = {}; rascunho = "";
+      codigo = a.codigo; res = null; servidor = {estado: "carregando"}; preenchidos = {}; errados = {}; rascunho = ""; retornoAberto = false;
       imagens.clear(); vivo = null; grandes.clear(); minis.clear(); central = null;
       desenhar();
       desenharCentral();
@@ -233,22 +234,33 @@
   }
 
   // ---------------- observação do analista ----------------
+  // o nome do analista vem da chave dele (servidor); não precisa digitar
   async function enviarObservacao() {
-    const texto = (raiz.getElementById("obs")?.value || "").trim();
+    if (enviando) return;
+    const texto = (raiz.getElementById("obs")?.value ?? rascunho).trim();
     const marcados = res.campos.filter(c => errados[c.nome]);
-    if (!texto && !marcados.length) return aviso("Escreva a observação ou marque algum campo como errado.");
-    const nome = raiz.getElementById("analista")?.value.trim() || "";
-    try { localStorage.setItem("asx-analista", nome); } catch {}
-    const r = await pedir({tipo: "observacao", dados: {
-      codigo: res.codigo, placa: res.placa, analista: nome, texto,
-      campos_errados: marcados.map(c => ({nome: c.nome, rotulo: c.rotulo, status: c.status, sugerido: c.encontrado, no_card: c.atual})),
-      preenchidos: Object.fromEntries(Object.entries(preenchidos).map(([k, v]) => [k, v.valor])),
-    }});
-    if (r.status !== 200) return aviso("Não deu para salvar a observação: o servidor do assistente está ligado?");
+    if (!texto && !marcados.length) return aviso("Marque algum item como errado ou escreva o que estava errado.");
+    enviando = true;
+    desenhar();
+    let r;
+    try {
+      r = await pedir({tipo: "observacao", dados: {
+        codigo: res.codigo, placa: res.placa, texto,
+        campos_errados: marcados.map(c => ({nome: c.nome, rotulo: c.rotulo, status: c.status, sugerido: c.encontrado, no_card: c.atual})),
+        preenchidos: Object.fromEntries(Object.entries(preenchidos).map(([k, v]) => [k, v.valor])),
+      }});
+    } finally {
+      enviando = false;
+    }
+    if (r.status !== 200) {  // o texto e as marcações continuam aqui para tentar de novo
+      desenhar();
+      return aviso(`Não foi enviado: ${r.dados?.erro || r.erro || `erro ${r.status}`}. O que você escreveu continua aqui.`);
+    }
     res.observacoes = r.dados.observacoes;
     rascunho = "";
     errados = {};
-    aviso("Observação registrada. Obrigado: isso ajuda a corrigir o robô.", true);
+    retornoAberto = false;
+    aviso("Enviado. Obrigado: isso ajuda a corrigir o robô.", true);
     atualizarTudo();
   }
 
@@ -261,6 +273,12 @@
     raiz = host.attachShadow({mode: "open"});
     raiz.innerHTML = `<style>${CSS_PAINEL}</style><div id="painel"></div><div id="central" hidden></div><div id="pop" hidden></div><div id="toast" hidden></div><div id="zoom" hidden></div>`;
     raiz.addEventListener("input", ev => { if (ev.target.id === "obs") rascunho = ev.target.value; });
+    // O card do CRM é um modal Bootstrap que "puxa o foco" de volta quando algo fora dele é focado (enforceFocus):
+    // sem isto não dá para digitar na observação. As teclas digitadas aqui também não vão para os atalhos do CRM.
+    for (const tipo of ["focusin", "focusout", "keydown", "keyup", "keypress"]) host.addEventListener(tipo, ev => {
+      if (tipo.startsWith("key") && ev.key === "Escape" && !ev.composedPath().some(e => e.tagName === "TEXTAREA")) return;
+      ev.stopPropagation();
+    });
     // central de fotos: roda do mouse = zoom no ponto, arrastar = mover a foto ampliada, duplo clique = ampliar/ajustar
     const palco = ev => central && ev.target.closest?.("#palco") && !ev.target.closest("button") ? ev.target.closest("#palco") : null;
     const ponto = (p, ev) => { const r = p.getBoundingClientRect(); return [ev.clientX - r.left - r.width / 2, ev.clientY - r.top - r.height / 2]; };
@@ -290,6 +308,8 @@
         desfazer: () => desfazer(c),
         errado: () => { errados[c.nome] = !errados[c.nome]; atualizarTudo(); if (popoverDe) abrirPopover(c, popoverDe, true); },
         observar: enviarObservacao,
+        retorno: () => { retornoAberto = true; desenhar(); raiz.getElementById("obs")?.focus(); },
+        "retorno-fechar": () => { retornoAberto = false; desenhar(); },
         copiar: () => navigator.clipboard.writeText(c.encontrado).then(() => aviso(`${c.rotulo} copiado.`, true)),
         foto: () => res?.fotos?.some(f => f.rotulo === b.dataset.rotulo) ? abrirCentral(b.dataset.rotulo) : verFoto(b.dataset.rotulo),
         central: () => abrirCentral(),
@@ -357,8 +377,6 @@
       const [sug, pre, div, conf, ok] = ["sugerido", "preenchido", "diverge", "conferir", "ok"].map(grupo);
       const gerais = res.conferencia.filter(i => i.status !== "OK" && !i.no_campo);  // o que não tem campo na tela (mensalidade, fotos...)
       const v = res.vistoria, f = res.fipe, obs = res.observacoes || [];
-      let analista = "";
-      try { analista = localStorage.getItem("asx-analista") || ""; } catch {}
       corpo = `
         <div class="contagem">${pill("sugerido", `${sug.length} para preencher`)}${pill("preenchido", `${pre.length} preenchido(s)`)}${pill("diverge", `${div.length} diverge`)}${pill("conferir", `${conf.length} conferir`)}${pill("ok", `${ok.length} confere`)}</div>
         ${(res.avisos || []).map(t => `<div class="alerta">${esc(t)}</div>`).join("")}
@@ -374,22 +392,42 @@
         ${res.incertezas.length ? `<details class="bloco"><summary>${res.incertezas.length} informação(ões) sem certeza</summary>${res.incertezas.map(x =>
             `<div class="item conferir"><div class="rot"><i></i>${esc(x.campo)}: ${esc(x.valor || "-")}</div><div class="fonte">${esc(x.motivo)} · ${esc(x.fonte)}</div></div>`).join("")}</details>` : ""}
         ${ok.length ? `<details class="bloco"><summary>${ok.length} campo(s) conferido(s) e batendo</summary>${ok.map(itemCampo).join("")}</details>` : ""}
-        <h3>Observação do analista</h3>
-        <div class="obs">
-          <textarea id="obs" rows="3" placeholder="O que estava errado no card ou o que a IA preencheu/sugeriu errado?">${esc(rascunho)}</textarea>
-          ${Object.values(errados).some(Boolean) ? `<div class="fonte">Marcados como errados: <b>${esc(res.campos.filter(c => errados[c.nome]).map(c => c.rotulo).join(", "))}</b></div>` : ""}
-          <div class="linha"><input id="analista" placeholder="seu nome" value="${esc(analista)}"><button class="pri" data-acao="observar">Enviar observação</button></div>
-          ${obs.length ? `<details><summary>${obs.length} observação(ões) já registrada(s)</summary>${obs.map(o =>
+        ${obs.length ? `<details class="bloco"><summary>${obs.length} observação(ões) já enviada(s) deste card</summary>${obs.map(o =>
             `<div class="anterior"><b>${esc(o.analista || "sem nome")}</b> · ${esc(o.data_hora)}<br>${esc(o.texto)}${o.campos_errados?.length ? `<br><small>errados: ${esc(o.campos_errados.map(x => x.rotulo).join(", "))}</small>` : ""}</div>`).join("")}</details>` : ""}
-        </div>
         <div class="rodape">Analisado em ${esc(res.analisado_em)}${res.segundos ? ` · ${res.segundos}s` : ""}${res.custo_rs != null ? ` · R$ ${String(res.custo_rs).replace(".", ",")} de IA` : ""}<br>
           Nada foi salvo pelo robô. Quem confere e salva é você. <button data-acao="analisar">analisar de novo</button></div>`;
     }
     const sit = res && SIT[res.situacao];
+    // redesenhar não pode tirar o analista do lugar: guarda rolagem, foco/cursor e o que estava aberto
+    const antes = p.querySelector(".corpo")?.scrollTop || 0, foco = raiz.activeElement;
+    const focoId = foco?.id, sel = foco && "selectionStart" in foco ? [foco.selectionStart, foco.selectionEnd] : null;
+    const abertos = new Set([...p.querySelectorAll("details[open] > summary")].map(s => s.textContent));
     p.innerHTML = `<div class="painel"><div class="topo"><div class="titulo"><b>Assistente</b> <span class="mono">${esc(res?.placa || "")}</span>${sit ? pill(...sit) : ""}
         <div class="sub">${esc(res?.veiculo || codigo)}</div></div><button class="x" data-acao="min" title="minimizar">–</button></div>
         ${faltam.length ? `<button class="tudo" data-acao="tudo">Preencher tudo <span>${faltam.length}</span></button>` : ""}
-        <div class="corpo">${corpo}</div></div>`;
+        <div class="corpo">${corpo}</div>${res ? caixaRetorno() : ""}</div>`;
+    for (const s of p.querySelectorAll("details > summary")) if (abertos.has(s.textContent)) s.parentElement.open = true;
+    const corpoNovo = p.querySelector(".corpo");
+    if (corpoNovo) corpoNovo.scrollTop = antes;
+    const novoFoco = focoId && raiz.getElementById(focoId);
+    if (novoFoco) { novoFoco.focus({preventScroll: true}); if (sel) try { novoFoco.setSelectionRange(...sel); } catch {} }
+  }
+
+  // Caixa de retorno fixa no rodapé do painel (não precisa rolar): o que foi marcado "está errado" entra na hora como etiqueta
+  function caixaRetorno() {
+    const marcados = res.campos.filter(c => errados[c.nome]);
+    const aberta = retornoAberto || marcados.length || rascunho;
+    if (!aberta) return `<button class="retorno-abrir" data-acao="retorno">✎ Algo errado neste card? Conte para melhorar o robô</button>`;
+    const etiqueta = c => `<span class="etq" title="${esc(`IA: ${c.encontrado || "-"} · no card: ${c.atual || "(vazio)"}`)}">
+        <b>${esc(c.rotulo)}</b> <small>IA: ${esc(c.encontrado || "-")}</small><button data-acao="errado" data-nome="${esc(c.nome)}" title="tirar">×</button></span>`;
+    return `<div class="retorno">
+      <div class="linha"><b>O que está errado?</b>${marcados.length || rascunho ? "" : `<button class="x" data-acao="retorno-fechar" title="fechar">–</button>`}</div>
+      ${marcados.length ? `<div class="etqs">${marcados.map(etiqueta).join("")}</div>`
+        : `<div class="fonte">Marque <b>está errado</b> nos itens acima e eles entram aqui, ou só escreva.</div>`}
+      <textarea id="obs" rows="2" placeholder="Explique o que estava errado (opcional se marcou os itens)">${esc(rascunho)}</textarea>
+      <button class="pri enviar" data-acao="observar"${enviando ? " disabled" : ""}>${enviando ? "enviando…"
+        : `Enviar${marcados.length ? ` (${marcados.length} item${marcados.length > 1 ? "s" : ""})` : ""}`}</button>
+    </div>`;
   }
 
   // no painel só o que precisa de olho (vidro, avaria média/grave, foto fora do lugar); o resto fica na central de fotos
@@ -757,7 +795,21 @@
     .tudo span{background:rgba(255,255,255,.25);border-radius:999px;padding:0 8px;font-size:12px}
     .tudo:hover{filter:brightness(1.1);color:#fff}
     @keyframes corre{to{background-position:-200% 0}}
-    .corpo{overflow:auto;padding:10px 14px 14px}
+    .corpo{overflow:auto;padding:10px 14px 14px;flex:1 1 auto;min-height:0}
+    .retorno-abrir{flex-shrink:0;margin:0;border:0;border-top:1px solid var(--borda);border-radius:0 0 14px 14px;padding:10px 14px;
+      background:#fafbfd;color:var(--acento);font-size:12.5px;text-align:left}
+    .retorno-abrir:hover{background:var(--acentof)}
+    .retorno{flex-shrink:0;max-height:48%;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:10px 14px 12px;
+      border-top:2px solid #f3b4b6;background:#fff8f8;border-radius:0 0 14px 14px;box-shadow:0 -6px 14px rgba(16,24,40,.06)}
+    .retorno>.linha b{color:#c0262d;font-size:12.5px}
+    .etqs{display:flex;flex-wrap:wrap;gap:5px}
+    .etq{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 4px 2px 9px;border-radius:999px;background:#fde8e8;
+      color:#9b1c1c;font-size:12px;border:1px solid #f3b4b6}
+    .etq small{color:#b4424a;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+    .etq button{border:0;background:transparent;color:#9b1c1c;padding:0 5px;font-size:14px;line-height:1}
+    .retorno .enviar{padding:7px 10px;font-size:12.5px}
+    .retorno .enviar:disabled{opacity:.6;cursor:default}
+    .marca{font-weight:600}.item.errado .marca{color:#c0262d}
     .sub,small{color:var(--sub);font-size:12px}.mono{font-family:ui-monospace,Consolas,monospace}
     h3{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--sub);margin:16px 0 6px}
     .ok{--c:#14804a;--f:#e5f6ec}.sugerido{--c:#8a4f00;--f:#fff3dc}.conferir{--c:#c0262d;--f:#fde8e8}.diverge{--c:#c0262d;--f:#fde8e8}.preenchido{--c:#7c3aed;--f:#f1eafe}
