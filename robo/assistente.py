@@ -763,16 +763,48 @@ AUTO = {"pendentes": [], "proxima": 0.0, "ultima_lista": None, "na_lista": 0, "n
         "tentativas": {}, "lendo": False}
 
 
-def auto_ligado():
+def _ler_auto():
     try:
-        return bool(json.loads(ARQ_AUTO.read_text(encoding="utf-8")).get("ligado", True))
+        return json.loads(ARQ_AUTO.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return config.ENV.get("auto", "1") != "0"
+        return {}
+
+
+def _gravar_auto(**dados):
+    ARQ_AUTO.parent.mkdir(parents=True, exist_ok=True)
+    ARQ_AUTO.write_text(json.dumps({**_ler_auto(), **dados}), encoding="utf-8")
+
+
+def auto_ligado():
+    estado = _ler_auto()
+    if "ligado" in estado:
+        return bool(estado["ligado"])
+    return config.ENV.get("auto", "1") != "0"
+
+
+def refazer_desde():
+    """Análise pronta antes deste instante (botão "reanalisar tudo" do /admin) não conta: o card é analisado de novo."""
+    return float(_ler_auto().get("refazer_desde") or 0)
+
+
+def reanalisar_tudo():
+    """Limpa a fila (o card que está rodando termina) e faz a análise automática começar do zero."""
+    cancelados = 0
+    while True:
+        try:
+            pedido = FILA.get_nowait()
+        except queue.Empty:
+            break
+        cancelados += 1
+        _atualizar(pedido, estado="cancelado", etapa="", erro="fila limpa pelo admin (reanalisar tudo)")
+    _gravar_auto(refazer_desde=time.time())
+    AUTO.update(pendentes=[], tentativas={}, proxima=0.0, erro="")
+    print(f"{datetime.now():%H:%M:%S} · admin mandou reanalisar tudo: fila limpa ({cancelados} pedido(s)), lendo a lista de novo")
+    return cancelados
 
 
 def ligar_auto(ligado):
-    ARQ_AUTO.parent.mkdir(parents=True, exist_ok=True)
-    ARQ_AUTO.write_text(json.dumps({"ligado": bool(ligado)}), encoding="utf-8")
+    _gravar_auto(ligado=bool(ligado))
     if ligado:
         AUTO["proxima"] = 0.0  # lê a lista já
     print(f"{datetime.now():%H:%M:%S} · análise automática {'ligada' if ligado else 'desligada'}")
@@ -780,10 +812,15 @@ def ligar_auto(ligado):
 
 def _ja_resolvido(codigo):
     """Já analisado (ou na fila/rodando) por código, qualquer que tenha sido a forma de pedir."""
+    desde = refazer_desde()
     with _trava:
         for k, v in TRABALHOS.items():
             # "pulado" não conta: card pulado por tag de analista que depois foi liberada entra de novo
-            if codigo in (k, v.get("codigo")) and v.get("estado") in ("pronto", "fila", "rodando"):
+            if codigo not in (k, v.get("codigo")):
+                continue
+            if v.get("estado") in ("fila", "rodando"):
+                return True
+            if v.get("estado") == "pronto" and (v.get("fim") or 0) >= desde:  # pronto antes do "reanalisar tudo" não vale
                 return True
     return AUTO["tentativas"].get(codigo, 0) >= TENTATIVAS_AUTO
 
@@ -1230,6 +1267,9 @@ class Pedido(BaseHTTPRequestHandler):
         if caminho == "/api/admin/auto":
             ligar_auto(bool(dados.get("ligado")))
             return self._enviar({"ok": True, "auto": situacao_auto()})
+        if caminho == "/api/admin/reanalisar":
+            cancelados = reanalisar_tudo()
+            return self._enviar({"ok": True, "cancelados": cancelados, "auto": situacao_auto()})
         if caminho == "/api/admin/revogar":
             nome = revogar_chave(str(dados.get("chave") or ""))
             if nome is None:

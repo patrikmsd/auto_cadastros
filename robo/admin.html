@@ -78,6 +78,7 @@ h2 button{margin-left:6px}
       <div class="linha" style="align-items:center">
         <span id="autoEstado"></span>
         <span class="sub" id="autoDetalhe" style="flex:1"></span>
+        <button class="leve" id="reanalisar" title="Limpa a fila e analisa de novo todos os cards do filtro">reanalisar tudo</button>
         <button class="leve" id="autoBotao"></button>
       </div>
       <p class="sub" style="margin:8px 0 0">Quando ninguém está pedindo card, o robô lê a lista do filtro das analistas, analisa os cards
@@ -269,6 +270,14 @@ $("nome").addEventListener("keydown", e => { if (e.key === "Enter") $("criar").c
 
 $("autoBotao").onclick = async () => {
   await api("/api/admin/auto", {ligado: $("autoBotao").dataset.ligar === "1"});
+  atualizar();
+};
+
+$("reanalisar").onclick = async () => {
+  if (!confirm("Limpar a fila e analisar de novo todos os cards do filtro?\n\nO card que está rodando agora termina primeiro. "
+      + "Cada card gasta IA de novo.")) return;
+  const {dados: r} = await api("/api/admin/reanalisar", {});
+  if (r && r.ok) alert(`Pronto: fila limpa${r.cancelados ? ` (${r.cancelados} pedido(s) tirados)` : ""}. O robô vai ler a lista e começar de novo.`);
   atualizar();
 };
 
