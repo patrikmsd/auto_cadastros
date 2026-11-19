@@ -720,11 +720,12 @@ def analisar(pedido):
             _foto_tela(page, pasta_exec, "02_busca")
             if not achados:
                 return _atualizar(pedido, estado="erro", etapa="", erro="nenhum card encontrado com essa busca")
-            # card com tag de nome de analista: alguém já está cuidando dele, o robô não abre (exceto as liberadas,
-            # config.ANALISTAS_LIBERADAS, hoje a BARBARA, que está testando). Sem tag vem antes.
-            livres = sorted((c for c in achados if config.card_liberado(c["analistas"])), key=lambda c: bool(c["analistas"]))
+            # teste oficial: só abre card com a tag da BARBARA (config.ANALISTAS_LIBERADAS)
+            livres = [c for c in achados if config.card_liberado(c["analistas"])]
             if not livres:
-                return _atualizar(pedido, estado="pulado", etapa="", erro=f"card com analista ({', '.join(achados[0]['analistas'])}): não foi aberto")
+                tags = ", ".join(achados[0]["analistas"]) or "sem tag de analista"
+                return _atualizar(pedido, estado="pulado", etapa="",
+                                  erro=f"card não está com a tag {'/'.join(sorted(config.ANALISTAS_LIBERADAS))} ({tags}): não foi aberto")
             alvo = livres[0]
             pasta_card = pasta_exec / alvo["placa"]
             pasta_card.mkdir(parents=True, exist_ok=True)
@@ -827,13 +828,13 @@ def _proximo_automatico():
         return None
     finally:
         AUTO["lendo"] = False
-    # tag de nome de analista: não analisa, exceto as liberadas (config.ANALISTAS_LIBERADAS)
+    # teste oficial: só os cards com a tag da BARBARA (config.ANALISTAS_LIBERADAS)
     livres = [c["codigo"] for c in cards if c["placa"] and config.card_liberado(c["analistas"])]
     novos = [c for c in livres if not _ja_resolvido(c)]
     AUTO["lista"] = [{k: c.get(k) for k in ("codigo", "placa", "veiculo", "analistas", "vistoria")} for c in cards]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",
                 proxima=0.0 if novos else time.time() + ESPERA_SEM_NOVIDADE)
-    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} sem analista ou liberada(s) ({", ".join(sorted(config.ANALISTAS_LIBERADAS)) or "nenhuma"}), "
+    print(f"{datetime.now():%H:%M:%S} · análise automática: {len(cards)} card(s) no filtro, {len(livres)} com a tag ({", ".join(sorted(config.ANALISTAS_LIBERADAS)) or "nenhuma"}), "
           f"{len(novos)} novo(s) para analisar")
     return _proximo_automatico() if novos and FILA.empty() else None  # analista pediu enquanto lia? ele vai primeiro
 

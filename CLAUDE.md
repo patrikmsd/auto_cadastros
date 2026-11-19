@@ -80,6 +80,11 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 - Diagnóstico da digitação: o Chrome do analista ainda rodava a 0.12 (a 0.13 não tinha sido recarregada). Depois de
   atualizar a pasta, é preciso clicar em ↻ em chrome://extensions.
 
+### 2026-11-19 · só cards da BARBARA
+- `config.ANALISTAS_LIBERADAS = {"BARBARA"}` fixo no código (o `.env` `analistas_liberadas` não é mais lido).
+  `card_liberado` exige tag de analista e todas da lista: card **sem tag** ou com outra analista agora é pulado,
+  no automático e no pedido manual ("card não está com a tag BARBARA").
+
 ### 2026-11-18 · cards da BARBARA também são analisados
 
 - `config.ANALISTAS_LIBERADAS` (`.env`: `analistas_liberadas=BARBARA`, separado por vírgula; vazio = nenhuma; padrão

@@ -47,8 +47,8 @@ $env:PYTHONIOENCODING="utf-8"
 - A tela de administração fica em http://127.0.0.1:8780/admin e usa a senha `admin_senha` do `.env`. Por ela se
   criam as chaves dos analistas e se acompanham a fila, a análise automática, o terminal e as observações dos analistas.
 - O robô entra sozinho no PowerCRM com o `login` e o `password` do `.env` e escolhe a empresa.
-- Com a fila vazia, ele **analisa sozinho** os cards do filtro que ainda não têm tag de analista, ou que têm só a tag
-  de uma analista liberada (`analistas_liberadas=BARBARA` no `.env`; separe várias por vírgula). O filtro pega os
+- Com a fila vazia, ele **analisa sozinho** os cards do filtro que têm **só a tag da BARBARA** (fixo em
+  `robo/config.py`, `ANALISTAS_LIBERADAS`, durante o teste oficial; card sem tag ou de outra analista é pulado). O filtro pega os
   cards criados desde 01/01/2020 (dá para mudar com `filtro_desde=` no `.env`), com as tags PENDENCIAS LEVES ou
   CADASTRO COMPLETO e vistoria Em aprovação ou Retornada. A análise automática pode ser desligada na tela /admin.
 - `--local` atende só este PC, sem receber conexões da rede. `Ctrl+C` encerra.
