@@ -63,6 +63,17 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-19 · card sem placa (zero km) é analisado
+
+- O card `G2L8BYJ02w` (Saveiro 2027 sem placa) dava "nenhum card encontrado": a busca só reconhecia o card pela linha
+  "PLACA - veículo". `JS_BUSCA` (`robo/explorar.py`) agora lê cada `section.pwrcrm-card` (código no `id`, veículo em
+  `.vehicle-title`) e devolve `codigo`; `ler_card` clica pelo código. Sem placa, pasta do card e das fotos usam o código
+  (`explorar.identificador`). Análise automática não exige mais placa. Card sem placa: CRLV/nota não é descartado por
+  "outra placa" e a IA dos documentos é avisada de que placa vazia não é divergência. O lote continua pulando sem placa.
+- FIPE: `fipe._norm` ignora espaços sobrando (a FIPE devolve "Saveiro Robust 1.6 Total Flex 16V " com espaço no fim, que
+  dava "nome no card ≠ FIPE" DIVERGENTE).
+- Testado no PowerCRM real (só leitura) com o `G2L8BYJ02w`: achado, aberto, 33 fotos, resultado montado.
+
 ### 2026-11-18 · FIPE igual ao card = confere
 
 - `fipe_igual_confere(res)`, aplicado ao entregar o resultado (vale para os já gravados): Código FIPE igual ao do card,

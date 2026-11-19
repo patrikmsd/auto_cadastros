@@ -150,7 +150,7 @@ def escolher_documentos(bruto, card, atuais):
     crlvs = [i for i in itens if i.get("tipo") == "crlv" and any((i.get("crlv") or {}).values())]
     crlvs.sort(key=lambda i: (_so_letras(i["crlv"].get("placa")) == placa, bool(i.get("legivel"))), reverse=True)
     if crlvs:
-        if _so_letras(crlvs[0]["crlv"].get("placa")) not in ("", placa):
+        if placa and _so_letras(crlvs[0]["crlv"].get("placa")) not in ("", placa):  # card sem placa: aceita o CRLV
             avisos.append(f"o CRLV enviado é de outra placa ({crlvs[0]['crlv'].get('placa')}): não usado")
         else:
             saida["crlv"], fotos["CRLV do veículo"] = crlvs[0]["crlv"], crlvs[0]["rotulo"]
@@ -654,9 +654,9 @@ def _vigiar(pedido, inicio, parar):
                        key=lambda f: f.stat().st_mtime)
         if len(telas) != len(t.get("telas") or []):
             _atualizar(pedido, telas=[{"titulo": TITULOS_TELA[f.stem], "arquivo": str(f)} for f in telas])
-        if not t.get("placa"):
+        if not (t.get("amostras") or t.get("placa")):  # card sem placa: as fotos ficam na pasta com o código do card
             continue
-        amostras = config.PASTA_AMOSTRAS / t["placa"]
+        amostras = config.PASTA_AMOSTRAS / (t.get("amostras") or t["placa"])
         try:
             novas = sorted(f.name for f in amostras.iterdir() if FOTO_BAIXADA.match(f.name) and f.stat().st_mtime >= inicio - 1)
         except OSError:
@@ -685,7 +685,7 @@ def tela(pedido, i):
 def analisar(pedido):
     from playwright.sync_api import sync_playwright
 
-    from .explorar import buscar_card, gravar_rede, ler_card, salvar
+    from .explorar import buscar_card, gravar_rede, identificador, ler_card, salvar
     from .lote import conferir_card
     from .sessao import SessaoExpirada, abrir, esquecer_sessao, proteger
 
@@ -727,10 +727,11 @@ def analisar(pedido):
                 return _atualizar(pedido, estado="pulado", etapa="",
                                   erro=f"card não está com a tag {'/'.join(sorted(config.ANALISTAS_LIBERADAS))} ({tags}): não foi aberto")
             alvo = livres[0]
-            pasta_card = pasta_exec / alvo["placa"]
+            pasta_card = pasta_exec / identificador(alvo)
             pasta_card.mkdir(parents=True, exist_ok=True)
             salvar(pasta_card, "cards_filtro.json", [alvo])
-            _atualizar(pedido, placa=alvo["placa"], veiculo=alvo["veiculo"], etapa="lendo o card e baixando as fotos")
+            _atualizar(pedido, placa=alvo["placa"], amostras=identificador(alvo), veiculo=alvo["veiculo"],
+                       etapa="lendo o card e baixando as fotos")
             pasta_fotos, _ = ler_card(page, ctx, alvo, pasta_card, rede, busca=pedido, liberadas=True)
         finally:
             browser.close()
@@ -866,7 +867,7 @@ def _proximo_automatico():
     finally:
         AUTO["lendo"] = False
     # teste oficial: só os cards com a tag da BARBARA (config.ANALISTAS_LIBERADAS)
-    livres = [c["codigo"] for c in cards if c["placa"] and config.card_liberado(c["analistas"])]
+    livres = [c["codigo"] for c in cards if config.card_liberado(c["analistas"])]  # sem placa (zero km) também
     novos = [c for c in livres if not _ja_resolvido(c)]
     AUTO["lista"] = [{k: c.get(k) for k in ("codigo", "placa", "veiculo", "analistas", "vistoria")} for c in cards]
     AUTO.update(pendentes=novos, ultima_lista=time.time(), na_lista=len(cards), novos=len(novos), erro="",

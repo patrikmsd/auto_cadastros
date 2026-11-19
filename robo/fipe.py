@@ -42,7 +42,9 @@ _cache = None
 
 
 def _norm(t):
-    return unicodedata.normalize("NFKD", str(t or "")).encode("ascii", "ignore").decode().upper()
+    # espaços sobrando não contam: a FIPE devolve "Saveiro Robust 1.6 Total Flex 16V " (com espaço no fim)
+    texto = unicodedata.normalize("NFKD", str(t or "")).encode("ascii", "ignore").decode().upper()
+    return " ".join(texto.split())
 
 
 def _post(endpoint, dados):

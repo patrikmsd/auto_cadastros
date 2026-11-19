@@ -200,6 +200,8 @@ ESQUEMA_DOCS = {
 def analisar_documentos(card, documentos, provedor="gemini"):
     """documentos: {origem: [linhas do OCR sobre o veículo]}. Só dados do veículo vão para a IA."""
     veiculo = {k: card[k] for k in ("placa", "veiculo", "tipo_veiculo", "ano_fabricacao", "combustivel", "_depreciacao")}
+    if not veiculo["placa"]:  # zero km ainda não emplacado: placa vazia no card não é divergência
+        veiculo["placa"] = "(card sem placa: veículo novo ainda não emplacado; não conte como divergência)"
     conteudo = ("Veículo no card:\n" + json.dumps(veiculo, ensure_ascii=False, indent=2) +
                 "\n\nTexto lido dos documentos:\n" + json.dumps(documentos, ensure_ascii=False, indent=2))
     if provedor == "gpt":

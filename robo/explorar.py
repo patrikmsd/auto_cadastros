@@ -126,18 +126,23 @@ def buscar_card(page, codigo):
 
 
 JS_BUSCA = r"""(nomes) => {
-  const re = /^[A-Z]{3}-?\d[A-Z0-9]\d{2} - /;
-  const achados = [...document.querySelectorAll('*')].filter(e => e.children.length === 0 && re.test(e.textContent.trim()));
-  return achados.filter(e => e.offsetParent).map(e => {
-    let card = e;  // sobe até o bloco do card (o que tem a linha "• data")
-    for (let i = 0; i < 6 && card.parentElement && !/•/.test(card.innerText); i++) card = card.parentElement;
-    const linhas = card.innerText.split('\n').map(s => s.trim()).filter(Boolean);
-    const t = e.textContent.trim();
+  // cada card do funil é <section id="<código>" class="pwrcrm-card">; o veículo fica em .vehicle-title,
+  // "ABC1D23 - VW ..." ou só "VW - ..." quando o carro ainda não tem placa (zero km)
+  const re = /^([A-Z]{3}-?\d[A-Z0-9]\d{2}) - /;
+  return [...document.querySelectorAll('section.pwrcrm-card[id]')].filter(s => s.offsetParent).map(s => {
+    const linhas = s.innerText.split('\n').map(x => x.trim()).filter(Boolean);
+    const v = ((s.querySelector('.vehicle-title') || {}).innerText || '').trim();
+    const m = v.match(re);
     const criado = linhas.find(l => /•/.test(l));
-    return {placa: t.split(' - ')[0], veiculo: t.split(' - ').slice(1).join(' - '), criado: criado ? criado.split('•')[1].trim() : '',
-            tags: linhas, analistas: linhas.filter(l => nomes.includes(l))};
+    return {codigo: s.id, placa: m ? m[1] : '', veiculo: m ? v.slice(m[0].length) : v,
+            criado: criado ? criado.split('•')[1].trim() : '', tags: linhas, analistas: linhas.filter(l => nomes.includes(l))};
   });
 }"""
+
+
+def identificador(alvo):
+    """Nome da pasta e das fotos do card: a placa, ou o código do card quando ainda não tem placa (zero km)."""
+    return alvo.get("placa") or alvo.get("codigo") or "sem_placa"
 
 
 def baixar_anexos(ctx, rede, pasta_fotos, inicio):
@@ -238,7 +243,7 @@ def ler_card(page, ctx, alvo, pasta, rede, busca=None, liberadas=False):
     Antes de clicar recarrega o filtro da semana, ou refaz a busca pelo código se `busca` vier preenchida.
     liberadas=True (só o assistente): abre também card com tag só de analistas de config.ANALISTAS_LIBERADAS."""
     if alvo["analistas"] and not (liberadas and config.card_liberado(alvo["analistas"])):
-        raise ValueError(f"O card {alvo['placa']} tem analista ({', '.join(alvo['analistas'])}): não será aberto.")
+        raise ValueError(f"O card {identificador(alvo)} tem analista ({', '.join(alvo['analistas'])}): não será aberto.")
     pasta.mkdir(parents=True, exist_ok=True)
     rede.clear()
     if busca:
@@ -246,13 +251,16 @@ def ler_card(page, ctx, alvo, pasta, rede, busca=None, liberadas=False):
     else:
         esperar(page, lambda: page.goto(config.url_filtro_semana(), wait_until="domcontentloaded"), maximo=10_000,
                 pronto=lambda: page.get_by_text(alvo["placa"]).count() > 0)
-    esperar(page, lambda: page.get_by_text(alvo["placa"]).first.click(), maximo=6000,
-            pronto=lambda: page.locator("div.modal:visible").count() > 0)
+    # pelo código do card quando houver (card sem placa não tem o texto da placa para clicar)
+    clicar = (page.locator(f"section.pwrcrm-card[id='{alvo['codigo']}'] .vehicle-title").first if alvo.get("codigo")
+              else page.get_by_text(alvo["placa"]).first)
+    esperar(page, lambda: clicar.click(), maximo=6000, pronto=lambda: page.locator("div.modal:visible").count() > 0)
     modal = modal_visivel(page)
     (pasta / "card_atividades.txt").write_text(modal.inner_text(), encoding="utf-8")
 
     for aba in ("Contato", "Cotações", "Vistoria"):
-        esperar(page, lambda: modal.get_by_text(aba, exact=True).first.click(), maximo=4000)
+        # "Contato" também é título de seção escondido no formulário: clica no primeiro texto igual que estiver visível
+        esperar(page, lambda: modal.get_by_text(aba, exact=True).filter(visible=True).first.click(), maximo=4000)
         chave = aba.lower().replace("ç", "c").replace("õ", "o")
         salvar(pasta, f"card_{chave}.json", modal.evaluate(JS_CAMPOS))
         (pasta / f"card_{chave}.txt").write_text(modal.inner_text(), encoding="utf-8")
@@ -266,7 +274,7 @@ def ler_card(page, ctx, alvo, pasta, rede, busca=None, liberadas=False):
         esperar(page, botao.first.click, maximo=8000)
     fotos = modal.evaluate(JS_FOTOS)
 
-    pasta_fotos = config.PASTA_AMOSTRAS / alvo["placa"]
+    pasta_fotos = config.PASTA_AMOSTRAS / identificador(alvo)
     pasta_fotos.mkdir(parents=True, exist_ok=True)
     indice = []
     for i, foto in enumerate(fotos, 1):
