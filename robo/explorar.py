@@ -7,7 +7,7 @@ import argparse
 import json
 import mimetypes
 import re
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlparse
 
@@ -110,9 +110,13 @@ def listar_cards(page, saida):
 
 
 def buscar_card(page, codigo):
-    """Digita o código (ou placa) no campo "Buscar..." do funil (#pipelineFilterSelector) e lê os cards que sobram."""
+    """Digita o código (ou placa) no campo "Buscar..." do funil (#pipelineFilterSelector) e lê os cards que sobram.
+    A data vai na URL: sem ela o CRM só mostra cards criados no último mês e um card mais antigo não aparece em
+    nenhuma etapa. Sem filtro de tag/vistoria: quem decide se o card é aberto é a tag da analista."""
     campo = page.locator("#pipelineFilterSelector")
-    esperar(page, lambda: page.goto(f"{config.BASE_URL}/company/pipeline?funnel={config.FUNIL_VENDAS}", wait_until="domcontentloaded"),
+    url = (f"{config.BASE_URL}/company/pipeline?dateBegin={config.FILTRO_DESDE:%Y-%m-%d}"
+           f"&dateEnd={date.today() + timedelta(days=1):%Y-%m-%d}&typeDate=0&tagAutomatic=0&funnel={config.FUNIL_VENDAS}")
+    esperar(page, lambda: page.goto(url, wait_until="domcontentloaded"),
             maximo=8000, pronto=lambda: campo.is_visible() or acesso_expirou(page))
     if acesso_expirou(page):
         raise SessaoExpirada("o PowerCRM pediu para renovar o acesso: a sessão salva venceu")

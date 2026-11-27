@@ -1145,6 +1145,15 @@ def situacao_admin():
     }
 
 
+def analises_admin(limite=1000):
+    """Histórico para a página Análises do /admin: cada card analisado (pedido ou automático), o mais recente primeiro."""
+    campos = ("estado", "etapa", "erro", "placa", "codigo", "veiculo", "por", "inicio", "fim", "situacao", "sugeridos", "custo_rs")
+    with _trava:
+        lista = [{"pedido": k, **{c: v.get(c) for c in campos}} for k, v in TRABALHOS.items()]
+    lista.sort(key=lambda t: -(t.get("fim") or t.get("inicio") or 0))
+    return lista[:limite]
+
+
 def observacoes_admin(limite=500):
     """As observações mais recentes primeiro, do banco."""
     with _banco() as db:
@@ -1239,6 +1248,8 @@ class Pedido(BaseHTTPRequestHandler):
             return self._enviar(situacao_admin())
         if caminho == "/api/admin/observacoes":
             return self._enviar(observacoes_admin())
+        if caminho == "/api/admin/analises":
+            return self._enviar(analises_admin())
         if caminho == "/api/admin/log":
             from urllib.parse import parse_qs
 

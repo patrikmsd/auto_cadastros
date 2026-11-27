@@ -63,6 +63,26 @@ em `robo/custo_ia.py` (marcado como não confirmado: conferir na fatura).
 
 ## Histórico de mudanças
 
+### 2026-11-24 · card criado há mais de um mês dava "nenhum card encontrado"
+
+- O `8DJZV8MbDd` (JOG4B51, tag BARBARA, em "Vendas concretizadas") foi pedido 8 vezes e sempre deu "nenhum card
+  encontrado": sem data na URL, a busca do funil usa o padrão do CRM (cards criados no último mês) e o card era de 21/10.
+- `buscar_card` (`robo/explorar.py`) agora abre o funil com `dateBegin=FILTRO_DESDE` até amanhã, sem filtro de tag ou
+  vistoria; quem decide se o card é aberto continua sendo a tag da analista. Testado no PowerCRM real (só leitura) com
+  `8DJZV8MbDd` e `lodMnL1KDV`. Precisa reiniciar o serviço.
+
+### 2026-11-23 · disco cheio derrubava o navegador; página "Análises" no /admin
+
+- Das 13:23 às 14:35 todo card dava "Page crashed"/"Target crashed" (403 erros no índice): o disco do servidor estava
+  100% cheio e o Chromium caía por falta de espaço temporário ("ERR_INSUFFICIENT_RESOURCES"). Na mesma hora a leitura do
+  filtro devolveu 11.693 cards (normal: ~130). A infra tinha aumentado o disco virtual para 300 GB, mas a partição
+  continuava com 99 GB; depois do `growpart` + `resize2fs` o filtro voltou a 132 cards e o `X208bNxL2x` foi analisado.
+  Ainda não se sabe o que ocupa os 92 GB (o robô usa menos de 2 GB).
+- `/admin#analises`: página separada com o histórico de todas as análises (pedidas e automáticas; filtro por texto,
+  situação e origem; totais e custo) e a tabela "Cards do filtro", que saiu da página principal. Rota nova
+  `/api/admin/analises` (`analises_admin`), buscada só com a página aberta. Testado com servidor de teste e os dados
+  reais do índice; precisa reiniciar o serviço para a rota nova valer.
+
 ### 2026-11-19 · card sem placa (zero km) é analisado
 
 - O card `G2L8BYJ02w` (Saveiro 2027 sem placa) dava "nenhum card encontrado": a busca só reconhecia o card pela linha
